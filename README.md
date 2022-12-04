@@ -21,6 +21,10 @@ The architecture of this software follows loosely the onion architecture, and ad
 - **DirectoryService.Shared** - Shared components required by the other layers of the application
 - **DirectoryService.Tests** - Testing environment which houses integration and endpoint tests.
 
+# API V1 Schema
+This project aims to implement support for the already existing API schema defined and implemented in: https://github.com/overte-org/overte-metaverse
+
+In future V2 will be designed to further standardise the API.
 
 # Running Locally
 
