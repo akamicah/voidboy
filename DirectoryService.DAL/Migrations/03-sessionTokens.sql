@@ -1,0 +1,17 @@
+CREATE TABLE sessionTokens
+(
+    id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID() NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt TIMESTAMP DEFAULT NULL,
+    refreshToken UUID UNIQUE DEFAULT GEN_RANDOM_UUID() NOT NULL,
+    accountId UUID REFERENCES users(id) ON DELETE CASCADE,
+    scope SMALLINT DEFAULT 0,
+    expires TIMESTAMP NOT NULL,
+    deleted BOOL DEFAULT FALSE
+);
+
+CREATE TRIGGER sessionTokens_updated_at
+    BEFORE UPDATE
+    ON sessionTokens
+    FOR EACH ROW
+EXECUTE PROCEDURE updated_at_timestamp();

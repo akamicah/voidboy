@@ -1,0 +1,9 @@
+CREATE OR REPLACE FUNCTION updated_at_timestamp() RETURNS TRIGGER 
+LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    NEW.updatedAt = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;

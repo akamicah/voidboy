@@ -1,0 +1,58 @@
+{
+  "Server": {
+    "HttpPort": 9400,
+    "UseHttps": false,
+    "HttpCertFile": "",
+    "HttpCertPassword": "",
+    "HttpsPort": 9401,
+    "KnownProxies": []
+  },
+  "MetaverseInfo": {
+    "Name": "Overte",
+    "Nickname": "Overte",
+    "ServerUrl": "localhost",
+    "IceServerUrl": "localhost",
+    "DashboardUrl": "localhost"
+  },
+  "Db" : {
+    "ConnectionString": "Server=127.0.0.1;Port=5432;Database=directory_service;User Id=postgres;Password=postgres"
+  },
+  "DirectoryService": {
+    "MinDomainNameLength": 4,
+    "MaxDomainNameLength": 32,
+    "SessionTimeoutMinutes": 5,
+    "HeartbeatTimeoutSeconds": 300,
+    "DomainTimeoutSeconds": 600,
+    "DomainOnlineCheckSeconds": 120,
+    "FriendHandshakeTimeoutMinutes": 1,
+    "ConnectionRequestTimeoutMinutes": 5760,
+    "FriendRequestTimeoutMinutes": 5760,
+    "PlaceInformationTimeoutMinutes": 5,
+    "PlaceInactiveTimeoutMinutes": 5,
+    "PlaceActivityCheckSeconds": 175,
+    "FixDomainNetworkAddress": true,
+    "AllowTempDomainCreation": false
+  },
+  "Registration": {
+    "MinUsernameLength": 3,
+    "MaxUsernameLength": 32,
+    "RequireEmailVerification": false,
+    "EmailVerificationTimeoutMinutes": 1440,
+    "EmailVerificationTemplate": "./templates/email/registration.html",
+    "EmailVerificationSuccessRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailSuccess.html",
+    "EmailVerificationFailRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailFailure.html?r=FAILURE_REASON",
+    "DefaultAdminAccount": ""
+  },
+  "Tokens": {
+    "TokenGenerationUrl": "DIRECTORY_SERVER_URL/static/DomainTokenLogin.html",
+    "DomainTokenLifetimeHours": 210240,
+    "OwnerTokenLifetimeHours": 168
+  },
+  "Smtp": {
+    "Host": "127.0.0.1",
+    "Port": 1025,
+    "Secure": false,
+    "Username": "",
+    "Password": ""
+  }
+}
