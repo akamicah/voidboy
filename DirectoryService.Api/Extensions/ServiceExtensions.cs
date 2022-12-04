@@ -1,4 +1,5 @@
 using System.Reflection;
+using DirectoryService.Api.Providers;
 using DirectoryService.Core.Services;
 using DirectoryService.Core.Validators;
 using DirectoryService.DAL.Infrastructure;
@@ -30,6 +31,7 @@ public static class ServiceExtensions
     public static void RegisterServices(this IServiceCollection serviceCollection)
     {
         var assemblies = GetListOfAssemblies()
+            .Append(Assembly.GetAssembly(typeof(SessionProvider)))
             .Append(Assembly.GetAssembly(typeof(UserService)))
             .Append(Assembly.GetAssembly(typeof(DatabaseMigrator)))
             .Append(Assembly.GetAssembly(typeof(RegisterUserValidator)))
