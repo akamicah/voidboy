@@ -8,3 +8,7 @@ startup.ConfigureBuilder(builder);
 var app = builder.Build();
 
 startup.Configure(app);
+
+
+// Implemented for test WebApplicationFactory
+public partial class Program { }

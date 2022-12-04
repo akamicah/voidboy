@@ -1,5 +1,5 @@
+using System.Text.Json.Serialization;
 using DirectoryService.Api.Attributes;
-using DirectoryService.Api.Middleware.Authentication;
 using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,12 +15,12 @@ namespace DirectoryService.Api.Controllers;
 public class ServerInfoController : ControllerBase
 {
     private readonly ServiceConfiguration _configuration;
-    
+
     public ServerInfoController()
     {
         _configuration = ServicesConfigContainer.Config;
     }
-    
+
     [HttpGet("metaverse_info")]
     [HttpGet("v1/metaverse_info")]
     [AllowAnonymous]
@@ -43,14 +43,22 @@ public class ServerInfoController : ControllerBase
     {
         public string? Project { get; set; }
     }
-    
+
     public class MetaverseInfoModel
     {
+        [JsonPropertyName("metaverse_name")] 
         public string? MetaverseName { get; set; }
+        
+        [JsonPropertyName("metaverse_nickname")] 
         public string? MetaverseNickName { get; set; }
+        
+        [JsonPropertyName("metaverse_url")] 
         public string? MetaverseUrl { get; set; }
+        
+        [JsonPropertyName("ice_server_url")] 
         public string? IceServerUrl { get; set; }
-        public MetaverseVersionModel?  MetaverseServerVersion { get; set; }
+
+        [JsonPropertyName("metaverse_server_version")]
+        public MetaverseVersionModel? MetaverseServerVersion { get; set; }
     }
-    
 }
