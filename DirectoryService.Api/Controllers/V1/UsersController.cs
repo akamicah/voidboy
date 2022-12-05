@@ -42,7 +42,8 @@ public sealed class UsersController : V1ApiController
             return Failure();
 
         var ip = HttpContext.Connection.RemoteIpAddress;
-        var response = await _userService.RegisterUser(registerUserModel.User, ip ?? IPAddress.Parse("0.0.0.0"));
+        registerUserModel.User.OriginIp = ip ?? IPAddress.Any;
+        var response = await _userService.RegisterUser(registerUserModel.User);
         
         return Success(response);
     }

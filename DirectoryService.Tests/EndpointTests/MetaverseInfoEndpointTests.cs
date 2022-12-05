@@ -6,7 +6,7 @@ using DirectoryService.Shared.Config;
 namespace DirectoryService.Tests.EndpointTests;
 
 [TestFixture]
-public class GetMetaverseInformation
+public class MetaverseInfoEndpointTests
 {
     private ApiWebApplicationFactory? _factory;
     private HttpClient? _client;
@@ -58,6 +58,5 @@ public class GetMetaverseInformation
             Assert.That(info!.IceServerUrl, Is.EqualTo(_config!.MetaverseInfo.IceServerUrl));
             Assert.That(info!.MetaverseNickName, Is.EqualTo(_config!.MetaverseInfo.Nickname));
         });
-
     }
 }
