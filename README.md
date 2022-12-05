@@ -33,6 +33,8 @@ Inside the `development` directory is a docker-compose.yml file which will setup
 ## Database
 In order to run locally, you need to have a local instance of Postgres running. The easiest way to do this is by using Docker.
 
+**Treat all data in development as temporary, especially when running tests**
+
 Run the following docker command to get the database setup;
 
 `docker run -d --name postgres --rm -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=directory_service -p 5432:5432 -it postgres:15.1-alpine`
@@ -41,3 +43,10 @@ If you change the default postgres password then the password must be updated in
 
 ## Email Testing
 Recommended testing environment: https://github.com/mailhog/MailHog
+
+# Testing
+**WARNING:** All directory service database tables will be truncated (cleared) upon running tests, and test data seeded, so make sure you're not running with production data.
+
+The tests included cover API endpoint tests and integration tests to ensure services are running the way they should.
+
+With any contributions, please ensure tests are written to provide coverage where applicable.
