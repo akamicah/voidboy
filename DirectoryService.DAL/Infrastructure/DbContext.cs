@@ -1,4 +1,5 @@
 using System.Data;
+using Dapper;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Config;
 using Npgsql;
@@ -28,5 +29,14 @@ public class DbContext
         var connection = new NpgsqlConnection(_dbConnectionString);
         connection.Open();
         return connection;
+    }
+
+    public void RunScript(string filename)
+    {
+        using var con = CreateConnection();
+        if (!File.Exists("./Scripts/" + filename))
+            throw new FileNotFoundException("File not found", "./Scripts/" + filename);
+        var script = File.ReadAllText("./Scripts/" + filename);
+        con.Execute(script);
     }
 }

@@ -1,26 +1,36 @@
+using System.Net;
+using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Tests.IntegrationTests;
 
 [TestFixture]
-public class UserServiceTests
+public class UserServiceTests : TestBase
 {
-    private ApiWebApplicationFactory _factory;
-
     [OneTimeSetUp]
     public void Setup()
     {
-        _factory = new ApiWebApplicationFactory();
+        TestSetup();
     }
 
     [Test]
     public async Task CanRegisterUserTest()
     {
-        var userService = _factory.Services.GetRequiredService<UserService>();
+        var userService = _factory!.Services.GetRequiredService<UserService>();
 
-        //TODO
+        var user = await userService.RegisterUser(new RegisterUserDto()
+        {
+            Email = "test123@test.com",
+            Username = "test123",
+            Password = "test123!",
+            OriginIp = IPAddress.Any
+        });
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(user.AccountId, Is.Not.Empty);
+            Assert.That(user.Username!, Is.EqualTo("test123"));
+        });
     }
-    
-    
 }

@@ -39,7 +39,7 @@ public sealed class UserService
         throw new NotImplementedException();
     }
 
-    public async Task<UserRegisteredDto> RegisterUser(RegisterUserDto registerUserDto, IPAddress originatingIp)
+    public async Task<UserRegisteredDto> RegisterUser(RegisterUserDto registerUserDto)
     {
         await _registerUserValidator.ValidateAndThrowAsync(registerUserDto);
 
@@ -60,7 +60,7 @@ public sealed class UserService
             AuthVersion = auth.Version,
             AuthHash = auth.Hash,
             Role = UserRole.User,
-            CreatorIp = originatingIp.ToString()
+            CreatorIp = registerUserDto.OriginIp.ToString()
         };
 
         var response = await _userRepository.Create(newUser);
