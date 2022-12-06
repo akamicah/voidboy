@@ -6,17 +6,14 @@ using DirectoryService.Shared.Config;
 namespace DirectoryService.Tests.EndpointTests;
 
 [TestFixture]
-public class MetaverseInfoEndpointTests
+public class MetaverseInfoEndpointTests : TestBase
 {
-    private ApiWebApplicationFactory? _factory;
-    private HttpClient? _client;
     private ServiceConfiguration? _config;
     
     [OneTimeSetUp]
     public void Setup()
     {
-        _factory = new ApiWebApplicationFactory();
-        _client = _factory.CreateClient();
+        TestSetup();
         _config = ServicesConfigContainer.Config;
     }
 
