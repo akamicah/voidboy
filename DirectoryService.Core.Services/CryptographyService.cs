@@ -3,7 +3,7 @@ using BCrypt.Net;
 namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-internal class CryptographyService
+public class CryptographyService
 {
     /// <summary>
     /// In order to future proof for when new secure methods are implemented,
