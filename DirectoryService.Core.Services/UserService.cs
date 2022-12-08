@@ -3,6 +3,7 @@ using DirectoryService.Core.Dto;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.RepositoryInterfaces;
+using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Core.Validators;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
@@ -22,20 +23,28 @@ public sealed class UserService
     private readonly RegisterUserValidator _registerUserValidator;
     private readonly IUserRepository _userRepository;
     private readonly ServiceConfiguration _configuration;
-    
+    private readonly ISessionProvider _sessionProvider;
+
     public UserService(ILogger<UserService> logger,
         RegisterUserValidator registerUserValidator,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        ISessionProvider sessionProvider)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
         _userRepository = userRepository;
         _configuration = ServicesConfigContainer.Config;
+        _sessionProvider = sessionProvider;
     }
 
     public async Task<PaginatedResponse<User>> ListUsers(PaginatedRequest page)
     {
+        var requester = await _sessionProvider.GetRequesterSession();
+        if (page.IsAdmin && requester!.Role != UserRole.Admin)
+            throw new UnauthorisedApiException();
+
         // TODO: Figure out what we're returning and make sure it's not excessive information
+        
         throw new NotImplementedException();
     }
 

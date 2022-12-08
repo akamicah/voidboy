@@ -13,5 +13,5 @@ public class RegisterUserDto
     public string? Email { get; set;}
     
     [JsonIgnore]
-    public IPAddress OriginIp { get; set; }
+    public IPAddress? OriginIp { get; set; }
 }

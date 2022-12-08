@@ -1,10 +1,12 @@
 using System.Reflection;
 using DirectoryService.Api.Providers;
 using DirectoryService.Core.Services;
+using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Core.Validators;
 using DirectoryService.DAL.Infrastructure;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Config;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Extensions;
 
@@ -38,7 +40,13 @@ public static class ServiceExtensions
             .Append(Assembly.GetAssembly(typeof(ServicesConfigContainer)))
             .Distinct().ToArray();
 
+        serviceCollection.AddScoped<ISessionProvider, SessionProvider>();
         serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        
+        serviceCollection.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
         
         RegisterDiAttributedServices(assemblies!, serviceCollection);
     }

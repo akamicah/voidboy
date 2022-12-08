@@ -24,7 +24,7 @@ public sealed class UsersController : V1ApiController
     public async Task<IActionResult> GetUsers()
     {
         var page = PaginatedRequest();
-        
+
         var response = await _userService.ListUsers(page);
         
         return Success(response);

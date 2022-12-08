@@ -23,8 +23,4 @@
       <Compile Remove="Filters\UsersPaginationFilter.cs" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Filters" />
-    </ItemGroup>
-
 </Project>
