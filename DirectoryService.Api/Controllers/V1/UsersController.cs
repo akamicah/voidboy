@@ -56,5 +56,7 @@ public sealed class UsersController : V1ApiController
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public RegisterUserDto? User { get; set; }
     }
+    
+    //TODO: 'places' methods
 
 }
