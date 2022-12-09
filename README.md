@@ -43,7 +43,7 @@ In order to run locally, you need to have a local instance of Postgres running. 
 
 Run the following docker command to get the database setup;
 
-`docker run -d --name postgres --rm -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=directory_service -p 5432:5432 -it postgres:15.1-alpine`
+`docker run -d --name postgres --rm -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=directory_service -p 5432:5432 postgres:15.1-alpine`
 
 If you change the default postgres password then the password must be updated in the `DirectoryService.Api/config/serviceConfig.json`
 
