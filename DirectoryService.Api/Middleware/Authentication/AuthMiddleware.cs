@@ -1,4 +1,5 @@
 using DirectoryService.Api.Providers;
+using DirectoryService.Core.Services.Interfaces;
 
 namespace DirectoryService.Api.Middleware.Authentication;
 
@@ -11,10 +12,10 @@ public class AuthMiddleware
         _next = next;
     }
 
-    public async Task Invoke(HttpContext context, SessionProvider sessionProvider)
+    public async Task Invoke(HttpContext context, ISessionProvider sessionProvider)
     {
         // Used to populate the Session HttpContext item for authentication
-        await sessionProvider.GetRequestSession();
+        await sessionProvider.GetRequesterSession();
         await _next(context);
     }
 }

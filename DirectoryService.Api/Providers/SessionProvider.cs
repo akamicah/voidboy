@@ -1,14 +1,14 @@
 using System.Net.Http.Headers;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
+using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared.Attributes;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
 namespace DirectoryService.Api.Providers;
 
-[ScopedRegistration]
-public class SessionProvider
+public class SessionProvider : ISessionProvider
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ISessionTokenRepository _sessionTokenRepository;
@@ -26,7 +26,7 @@ public class SessionProvider
     /// <summary>
     /// Get session information for user making current request
     /// </summary>
-    public async Task<Session?> GetRequestSession()
+    public async Task<Session?> GetRequesterSession()
     {
         if (_httpContextAccessor.HttpContext?.Items["Session"] != null)
         {

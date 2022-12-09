@@ -24,10 +24,22 @@ public sealed class UsersController : V1ApiController
     public async Task<IActionResult> GetUsers()
     {
         var page = PaginatedRequest();
-        
+
         var response = await _userService.ListUsers(page);
         
         return Success(response);
+    }
+
+    /// <summary>
+    /// Redirect to dashboard user's profile
+    /// </summary>
+    // TODO: Is this even necessary anymore?
+    [HttpGet("/users/{username}")]
+    [Authorise]
+    public async Task<IActionResult> GetUserRedirect(string username)
+    {
+        //TODO
+        throw new NotImplementedException();
     }
     
     /// <summary>
@@ -57,4 +69,14 @@ public sealed class UsersController : V1ApiController
         public RegisterUserDto? User { get; set; }
     }
 
+    /// <summary>
+    /// Fetch a user's location
+    /// </summary>
+    [HttpGet("{accountId:guid}/location")]
+    [Authorise]
+    public async Task<IActionResult> GetUserLocation(Guid accountId)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
 }
