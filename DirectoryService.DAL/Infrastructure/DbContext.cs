@@ -34,9 +34,11 @@ public class DbContext
     public void RunScript(string filename)
     {
         using var con = CreateConnection();
-        if (!File.Exists("./Scripts/" + filename))
-            throw new FileNotFoundException("File not found", "./Scripts/" + filename);
-        var script = File.ReadAllText("./Scripts/" + filename);
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "Scripts/");
+        if (!File.Exists(baseDir + "/" + filename))
+            throw new FileNotFoundException("File not found", baseDir + "/" + filename);
+        var script = File.ReadAllText(baseDir + "/" + filename);
         con.Execute(script);
     }
 }

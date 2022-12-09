@@ -81,7 +81,7 @@ public class Startup
     /// </summary>
     public void Configure(WebApplication app)
     {
-        _logger = app.Services.GetService<ILogger<Startup>>()!;
+        _logger = app.Services.GetRequiredService<ILogger<Startup>>();
 
         ConfigureForwardHeaders(app);
 
@@ -92,7 +92,17 @@ public class Startup
         
         if (!DatabaseMigrator.MigrateDatabase(_logger))
             return;
-        
+
+        // If Development then truncate data and seed dev data
+        if (app.Environment.IsDevelopment())
+        {
+            var dbContext = app.Services.GetRequiredService<DbContext>();
+            _logger.LogWarning("Development Mode: Truncating all data in 5 seconds. Terminate application NOW if using production data.");
+            Thread.Sleep(5000);
+            dbContext.RunScript("truncateAll.sql");
+            _logger.LogInformation("Database truncated. Seeding dev data");
+            dbContext.RunScript("devSeed.sql");
+        }
         app.Run();
     }
 
