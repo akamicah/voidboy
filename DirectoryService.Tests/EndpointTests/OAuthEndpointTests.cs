@@ -23,7 +23,7 @@ public class OAuthEndpointTests : TestBase
             password = "test123!"
         };
         
-        var response = await _client.PostAsJsonAsync("api/oauth/token", requestData);
+        var response = await _client.PostAsJsonAsync("oauth/token", requestData);
 
         var responseBody = await response.Content.ReadFromJsonAsync<GrantedTokenDto>();
 
