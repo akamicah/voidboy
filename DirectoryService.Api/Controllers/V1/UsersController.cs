@@ -29,6 +29,18 @@ public sealed class UsersController : V1ApiController
         
         return Success(response);
     }
+
+    /// <summary>
+    /// Redirect to dashboard user's profile
+    /// </summary>
+    // TODO: Is this even necessary anymore?
+    [HttpGet("/users/{username}")]
+    [Authorise]
+    public async Task<IActionResult> GetUserRedirect(string username)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
     /// <summary>
     /// Request to register a new user
@@ -56,7 +68,15 @@ public sealed class UsersController : V1ApiController
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public RegisterUserDto? User { get; set; }
     }
-    
-    //TODO: 'places' methods
 
+    /// <summary>
+    /// Fetch a user's location
+    /// </summary>
+    [HttpGet("{accountId:guid}/location")]
+    [Authorise]
+    public async Task<IActionResult> GetUserLocation(Guid accountId)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
 }

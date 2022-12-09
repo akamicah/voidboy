@@ -16,4 +16,12 @@ public sealed class ProfilesController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
+    
+    [HttpGet("/api/v1/profile/{accountId:guid}")]
+    [Authorise]
+    public async Task<IActionResult> GetProfile(Guid accountId)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
 }

@@ -9,6 +9,10 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class UserActivitiesController : V1ApiController
 {
+    /// <summary>
+    /// Log User Activity 
+    /// </summary>
+    // TODO: Audit what gets logged and if it should be logged
     [HttpPost]
     [Authorise]
     public async Task<IActionResult> PostUserActivity()

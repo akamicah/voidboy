@@ -16,4 +16,28 @@ public sealed class TokensController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// Authorise a new token for the logged in account
+    /// </summary>
+    [HttpPost("/api/v1/token/new")]
+    [Authorise]
+    public async Task<IActionResult> CreateToken()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
+    
+    /// <summary>
+    /// Create a new token or redirect to login
+    /// </summary>
+    // TODO: Is this even necessary anymore?
+    [HttpGet("/token/new")]
+    [HttpGet("/user/token/new")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CreateTokenOrRedirect()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
 }

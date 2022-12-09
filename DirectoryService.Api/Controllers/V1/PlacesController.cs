@@ -1,5 +1,6 @@
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
+using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -31,6 +32,9 @@ public sealed class PlacesController : V1ApiController
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Delete place
+    /// </summary>
     [HttpDelete("{placeId:guid}")]
     [Authorise]
     public async Task<IActionResult> DeletePlace(Guid placeId)
@@ -42,16 +46,105 @@ public sealed class PlacesController : V1ApiController
     /// <summary>
     /// Update place information
     /// </summary>
-    [HttpPut("{placeId:guid")]
+    [HttpPut("{placeId:guid}")]
     [Authorise]
     public async Task<IActionResult> UpdatePlaceInfo(Guid placeId)
     {
         //TODO
         throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// Get place information by field name
+    /// </summary>
+    [HttpGet("{placeId:guid}/field/{fieldName}")]
+    [Authorise]
+    public async Task<IActionResult> GetPlaceInfoByField(Guid placeId, string fieldName)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
+    /// <summary>
+    /// Update place information by field name
+    /// </summary>
+    [HttpPost("{placeId:guid}/field/{fieldName}")]
+    [Authorise]
+    public async Task<IActionResult> UpdatePlaceInfoByField(Guid placeId, string fieldName)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Update place's current activity
+    /// </summary>
+    [HttpPost("current")]
+    [Authorise]
+    public async Task<IActionResult> UpdatePlaceActivity()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
+    /// <summary>
+    /// Update place refresh key/api key
+    /// </summary>
+    [HttpPost("current/refreshkey")]
+    [Authorise]
+    public async Task<IActionResult> UpdatePlaceRefreshKey()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
+    /// <summary>
+    /// Retrieve a list of places with no associated domain
+    /// </summary>
+    [HttpGet("orphan")]
+    [HttpGet("unhooked")]
+    [HttpGet("/api/maint/places/unhooked")]
+    [Authorise(UserRole.Admin)]
+    public async Task<IActionResult> GetOrphanPlaces()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
+    /// <summary>
+    /// Delete places with no associated domain
+    /// </summary>
+    [HttpDelete("orphan")]
+    [HttpDelete("unhooked")]
+    [HttpDelete("/api/maint/places/unhooked")]
+    [Authorise(UserRole.Admin)]
+    public async Task<IActionResult> DeleteOrphanPlaces()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
     
+    /// <summary>
+    /// Retrieve a list of inactive places
+    /// </summary>
+    [HttpGet("inactive")]
+    [HttpGet("/api/maint/places/inactive")]
+    [Authorise(UserRole.Admin)]
+    public async Task<IActionResult> GetInactivePlaces()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
+    
+    /// <summary>
+    /// Delete inactive places
+    /// </summary>
+    [HttpDelete("inactive")]
+    [HttpDelete("/api/maint/places/inactive")]
+    [Authorise(UserRole.Admin)]
+    public async Task<IActionResult> DeleteInactivePlaces()
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
 }

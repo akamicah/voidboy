@@ -9,7 +9,7 @@ using DirectoryService.Core.Services;
 namespace DirectoryService.Api.Controllers;
 
 [Produces("application/json")]
-[Route("api/oauth")]
+[Route("oauth")]
 [ApiController]
 public sealed class OAuthController : ControllerBase
 { 

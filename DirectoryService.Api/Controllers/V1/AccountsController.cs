@@ -62,7 +62,7 @@ public sealed class AccountsController : V1ApiController
     /// Fetch specific account property by field name
     /// </summary>
     // Is this in use?
-    [HttpGet("{accountId:guid}/field/{fieldName:string}")]
+    [HttpGet("{accountId:guid}/field/{fieldName}")]
     [Authorise]
     public async Task<IActionResult> GetAccountField(Guid accountId, string fieldName)
     {
@@ -74,7 +74,7 @@ public sealed class AccountsController : V1ApiController
     /// Update account property by field name
     /// </summary>
     // Is this in use?
-    [HttpPost("{accountId:guid}/field/{fieldName:string}")]
+    [HttpPost("{accountId:guid}/field/{fieldName}")]
     [Authorise]
     public async Task<IActionResult> SetAccountField(Guid accountId, string fieldName, [FromBody] UpdateFieldDto fieldUpdate)
     {
@@ -99,6 +99,17 @@ public sealed class AccountsController : V1ApiController
     [HttpDelete("{accountId:guid}/tokens/{token:guid}")]
     [Authorise]
     public async Task<IActionResult> DeleteAccountToken(Guid accountId, Guid token)
+    {
+        //TODO
+        throw new NotImplementedException();
+    }
+    
+    /// <summary>
+    /// Email verification endpoint
+    /// </summary>
+    [HttpDelete("verify/email")]
+    [Authorise]
+    public async Task<IActionResult> EmailVerificationEndpoint()
     {
         //TODO
         throw new NotImplementedException();
