@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Tests;
 
-[TestFixture]
 public class TestBase
 {
     protected ApiWebApplicationFactory? _factory;

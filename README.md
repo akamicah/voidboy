@@ -27,13 +27,19 @@ This project aims to implement support for the already existing API schema defin
 In future V2 will be designed to further standardise the API.
 
 # Running Locally
-
 Inside the `development` directory is a docker-compose.yml file which will setup both the database and mailhog. Simply run `docker-compose up -d` inside the `development` directory to create the services, or `docker-compose down` to terminate them.
+
+# Running in Development Mode
+**WARNING:** All directory service database tables will be truncated (cleared) upon running in development mode, and dev data seeded, so make sure you're not running with production data.
+
+Treat data created and stored in development mode as volatile.
+
+To run the directory service in Development mode, ensure the environmental variable `ASPNETCORE_ENVIRONMENT=Development` is defined.
 
 ## Database
 In order to run locally, you need to have a local instance of Postgres running. The easiest way to do this is by using Docker.
 
-**Treat all data in development as temporary, especially when running tests**
+**Treat all data in development as volatile**
 
 Run the following docker command to get the database setup;
 
