@@ -66,22 +66,22 @@ public class EmailQueueRepository : IEmailQueueRepository
         throw new NotImplementedException();
     }
 
-    public async Task SoftDelete(QueuedEmail entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<QueuedEmail> entities)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Delete(QueuedEmail entity)
     {
         throw new NotImplementedException();
     }
 
     public async Task Delete(IEnumerable<QueuedEmail> entities)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public async Task HardDelete(QueuedEmail entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task HardDelete(IEnumerable<QueuedEmail> entities)
     {
         throw new NotImplementedException();
     }

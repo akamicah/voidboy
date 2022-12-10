@@ -54,16 +54,6 @@ public class SessionTokenRepository : ISessionTokenRepository
         throw new NotImplementedException();
     }
 
-    public async Task SoftDelete(SessionToken entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<SessionToken> entities)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Delete(SessionToken entity)
     {
         throw new NotImplementedException();
@@ -74,6 +64,16 @@ public class SessionTokenRepository : ISessionTokenRepository
         throw new NotImplementedException();
     }
 
+    public async Task HardDelete(SessionToken entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task HardDelete(IEnumerable<SessionToken> entities)
+    {
+        throw new NotImplementedException();
+    }
+    
     /// <summary>
     /// Delete all entities where deleted = true
     /// </summary>
@@ -98,7 +98,6 @@ public class SessionTokenRepository : ISessionTokenRepository
 
     public async Task ExpireTokens()
     {
-        using var con = await _dbContext.CreateConnectionAsync();
         //TODO
     }
 }

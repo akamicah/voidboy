@@ -50,16 +50,6 @@ public class ActivationTokenRepository : IActivationTokenRepository
         throw new NotImplementedException();
     }
 
-    public async Task SoftDelete(ActivationToken entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<ActivationToken> entities)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Delete(ActivationToken entity)
     {
         throw new NotImplementedException();
@@ -70,6 +60,16 @@ public class ActivationTokenRepository : IActivationTokenRepository
         throw new NotImplementedException();
     }
 
+    public async Task HardDelete(ActivationToken entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task HardDelete(IEnumerable<ActivationToken> entities)
+    {
+        throw new NotImplementedException();
+    }
+    
     /// <summary>
     /// Delete all entities where deleted = true
     /// </summary>

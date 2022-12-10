@@ -63,16 +63,6 @@ public class UserRepository : IUserRepository
         throw new NotImplementedException();
     }
 
-    public async Task SoftDelete(User entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<User> entities)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Delete(User entity)
     {
         throw new NotImplementedException();
@@ -83,6 +73,16 @@ public class UserRepository : IUserRepository
         throw new NotImplementedException();
     }
 
+    public async Task HardDelete(User entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task HardDelete(IEnumerable<User> entities)
+    {
+        throw new NotImplementedException();
+    }
+    
     /// <summary>
     /// Delete all entities where deleted = true
     /// </summary>

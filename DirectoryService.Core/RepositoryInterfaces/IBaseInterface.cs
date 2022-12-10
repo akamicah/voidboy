@@ -9,9 +9,9 @@ public interface IIdentifiedInterface<T> : IBaseInterface<T>
 {
     public Task<T?> Retrieve(Guid id);
     public Task<T?> Update(T entity);
-    public Task SoftDelete(T entity);
-    public Task SoftDelete(IEnumerable<T> entities);
     public Task Delete(T entity);
     public Task Delete(IEnumerable<T> entities);
+    public Task HardDelete(T entity);
+    public Task HardDelete(IEnumerable<T> entities);
     public Task PurgeDeleted();
 }

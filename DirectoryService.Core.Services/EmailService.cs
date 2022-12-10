@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.Exceptions;
@@ -42,13 +43,26 @@ public class EmailService : IEmailService
         var emailQueue = await _emailQueueRepository.GetNextQueuedEmails(limit);
         return emailQueue.ToList();
     }
+
+    private async Task SendEmail(QueuedEmail email)
+    {
+        
+    }
     
     public async Task SendEmails()
     {
         var emailsToSend = await GetQueuedEmails();
         foreach (var email in emailsToSend)
         {
-            
+            try
+            {
+                await SendEmail(email);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error sending email {id}. {exception}", email.Id, e);
+                await _emailQueueRepository.Delete(email);
+            }
         }
     }
 
