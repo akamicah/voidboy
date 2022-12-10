@@ -36,9 +36,8 @@
   "Registration": {
     "MinUsernameLength": 3,
     "MaxUsernameLength": 32,
-    "RequireEmailVerification": false,
+    "RequireEmailVerification": true,
     "EmailVerificationTimeoutMinutes": 1440,
-    "EmailVerificationTemplate": "./templates/email/registration.html",
     "EmailVerificationSuccessRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailSuccess.html",
     "EmailVerificationFailRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailFailure.html?r=FAILURE_REASON",
     "DefaultAdminAccount": ""
@@ -49,6 +48,8 @@
     "OwnerTokenLifetimeHours": 168
   },
   "Smtp": {
+    "Enable": true,
+    "SendFrom": "noreply@overte.org",
     "Host": "127.0.0.1",
     "Port": 1025,
     "Secure": false,

@@ -48,7 +48,18 @@ public class Startup
         SetupConfiguration();
 
         var config = ServicesConfigContainer.Config;
-        
+
+        builder.Services.AddFluentEmail(
+                ServicesConfigContainer.Config.Smtp.SenderEmail,
+                ServicesConfigContainer.Config.Smtp.SenderName
+            )
+            .AddRazorRenderer()
+            .AddSmtpSender(
+                ServicesConfigContainer.Config.Smtp.Host ?? "localhost",
+                ServicesConfigContainer.Config.Smtp.Port,
+                ServicesConfigContainer.Config.Smtp.Username ?? "",
+                ServicesConfigContainer.Config.Smtp.Password ?? "");
+
         // Setup Kestrel with http/https options provided in configuration
         builder.WebHost.UseKestrel((hostingContext, options) =>
         {

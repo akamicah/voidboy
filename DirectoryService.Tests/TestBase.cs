@@ -12,6 +12,7 @@ public class TestBase
     {
         _factory = new ApiWebApplicationFactory();
         _client = _factory.CreateClient();
+        
         var dbContext = _factory.Services.GetRequiredService<DbContext>();
         
         dbContext.RunScript("truncateAll.sql");

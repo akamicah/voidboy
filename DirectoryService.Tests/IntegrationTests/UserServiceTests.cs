@@ -1,7 +1,9 @@
 using System.Net;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
+using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Config;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Tests.IntegrationTests;
@@ -19,7 +21,11 @@ public class UserServiceTests : TestBase
     public async Task CanRegisterUserTest()
     {
         var userService = _factory!.Services.GetRequiredService<UserService>();
+        var emailService = _factory!.Services.GetRequiredService<IEmailService>();
 
+        // We want an email to be sent
+        ServicesConfigContainer.Config.Registration.RequireEmailVerification = true;
+        
         var user = await userService.RegisterUser(new RegisterUserDto()
         {
             Email = "test123@test.com",
@@ -33,6 +39,10 @@ public class UserServiceTests : TestBase
             Assert.That(user.AccountId, Is.Not.Empty);
             Assert.That(user.Username!, Is.EqualTo("test123"));
         });
+        
+        // Ensure activation email is queued for sending
+        var emailQueue = await emailService.GetQueuedEmails();
+        Assert.That(emailQueue, Is.Not.Empty);
     }
     
     [Test]

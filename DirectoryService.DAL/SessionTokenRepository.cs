@@ -95,4 +95,10 @@ public class SessionTokenRepository : ISessionTokenRepository
 
         return entity;
     }
+
+    public async Task ExpireTokens()
+    {
+        using var con = await _dbContext.CreateConnectionAsync();
+        //TODO
+    }
 }
