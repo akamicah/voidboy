@@ -7,7 +7,10 @@ using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Config;
 using FluentEmail.Core;
+using FluentEmail.Liquid;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace DirectoryService.Core.Services;
@@ -16,18 +19,26 @@ namespace DirectoryService.Core.Services;
 public class EmailService : IEmailService
 {
     private readonly ILogger<EmailService> _logger;
-    private readonly IEmailQueueRepository _emailQueueRepository;
+    private readonly IEmailQueueEntityRepository _emailQueueEntityRepository;
     private readonly IFluentEmail _fluentEmail;
     private readonly ServiceConfiguration _config;
+    private readonly IUserRepository _userRepository;
+    private readonly string _templateDirectory;
     
     public EmailService(ILogger<EmailService> logger,
-        IEmailQueueRepository emailQueueRepository,
-        IFluentEmail fluentEmail)
+        IEmailQueueEntityRepository emailQueueEntityRepository,
+        IFluentEmail fluentEmail,
+        IUserRepository userRepository)
     {
         _logger = logger;
-        _emailQueueRepository = emailQueueRepository;
+        _emailQueueEntityRepository = emailQueueEntityRepository;
         _fluentEmail = fluentEmail;
         _config = ServicesConfigContainer.Config;
+        _userRepository = userRepository;
+        
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        _templateDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "templates/email/");
+        
     }
 
     public async Task QueueNewEmail(QueuedEmail queuedEmail)
@@ -35,23 +46,53 @@ public class EmailService : IEmailService
         if (!_config.Smtp.Enable)
             throw new EmailNotAvailableApiException();
         
-        await _emailQueueRepository.Create(queuedEmail);
+        await _emailQueueEntityRepository.Create(queuedEmail);
     }
 
     public async Task<List<QueuedEmail>> GetQueuedEmails(int limit = 1000)
     {
-        var emailQueue = await _emailQueueRepository.GetNextQueuedEmails(limit);
+        var emailQueue = await _emailQueueEntityRepository.GetNextQueuedEmails(limit);
         return emailQueue.ToList();
+    }
+
+    private async Task SendActivationEmail(User user, QueuedEmail email)
+    {
+        await _fluentEmail.To(user.Email)
+            .Subject("Activate your Account")
+            .UsingTemplateFromFile( _templateDirectory + "activationEmail.liquid", new 
+            {
+                user.Username,
+                ActivationLink = "Test123",
+                ExpireTime = "Now!"
+            }, true).SendAsync();
     }
 
     private async Task SendEmail(QueuedEmail email)
     {
-        
+        var user = await _userRepository.Retrieve(email.AccountId);
+        if (user != null)
+        {
+            switch (email.Type)
+            {
+                case EmailType.ActivationEmail:
+                    await SendActivationEmail(user, email);
+                    break;
+
+                case EmailType.Invalid:
+                default:
+                    throw new ArgumentOutOfRangeException(email.Type.ToString());
+            }
+        }
     }
     
     public async Task SendEmails()
     {
         var emailsToSend = await GetQueuedEmails();
+        if (emailsToSend.Count == 0)
+            return;
+        
+        _logger.LogInformation("Sending {count} emails from queue.", emailsToSend.Count);
+        
         foreach (var email in emailsToSend)
         {
             try
@@ -60,8 +101,9 @@ public class EmailService : IEmailService
             }
             catch (Exception e)
             {
-                _logger.LogError("Error sending email {id}. {exception}", email.Id, e);
-                await _emailQueueRepository.Delete(email);
+                _logger.LogError("Error sending email {id}. {exception}", email.Id, e.Message);
+                //TODO: Increment attempt, and if attempt = 3 delete
+                //await _emailQueueEntityRepository.Delete(email);
             }
         }
     }

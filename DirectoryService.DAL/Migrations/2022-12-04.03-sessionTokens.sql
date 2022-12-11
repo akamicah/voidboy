@@ -6,8 +6,7 @@ CREATE TABLE sessionTokens
     refreshToken UUID UNIQUE DEFAULT GEN_RANDOM_UUID() NOT NULL,
     accountId UUID REFERENCES users(id) ON DELETE CASCADE,
     scope SMALLINT DEFAULT 0,
-    expires TIMESTAMP NOT NULL,
-    deleted BOOL DEFAULT FALSE
+    expires TIMESTAMP NOT NULL
 );
 
 CREATE TRIGGER sessionTokens_updated_at

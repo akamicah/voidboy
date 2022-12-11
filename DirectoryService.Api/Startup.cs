@@ -1,11 +1,16 @@
 using System.Net;
 using DirectoryService.Api.Extensions;
+using DirectoryService.Api.Jobs;
 using DirectoryService.Api.Middleware;
 using DirectoryService.Api.Middleware.Authentication;
 using DirectoryService.Api.Policies;
 using DirectoryService.DAL.Infrastructure;
 using DirectoryService.Shared.Config;
+using FluentEmail.Liquid;
+using FluentScheduler;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 // ReSharper disable CommentTypo
@@ -34,7 +39,7 @@ public class Startup
         builder.Services.AddControllers()
             .AddJsonOptions(o =>
                 o.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy());
-
+ 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddLogging(opt =>
             {
@@ -48,12 +53,22 @@ public class Startup
         SetupConfiguration();
 
         var config = ServicesConfigContainer.Config;
+        
+        
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "templates/email/");
+        
+        var options = new LiquidRendererOptions
+        {
+            FileProvider = new PhysicalFileProvider(baseDir),
+            
+        };
 
         builder.Services.AddFluentEmail(
                 ServicesConfigContainer.Config.Smtp.SenderEmail,
                 ServicesConfigContainer.Config.Smtp.SenderName
             )
-            .AddRazorRenderer()
+            .AddLiquidRenderer()
             .AddSmtpSender(
                 ServicesConfigContainer.Config.Smtp.Host ?? "localhost",
                 ServicesConfigContainer.Config.Smtp.Port,
@@ -108,12 +123,23 @@ public class Startup
         if (app.Environment.IsDevelopment())
         {
             var dbContext = app.Services.GetRequiredService<DbContext>();
-            _logger.LogWarning("Development Mode: Truncating all data in 5 seconds. Terminate application NOW if using production data.");
-            Thread.Sleep(5000);
+            if (Environment.GetEnvironmentVariable("ODS_SKIP_DEV_WARNING") == null ||
+                bool.Parse(Environment.GetEnvironmentVariable("ODS_SKIP_DEV_WARNING")!) == false)
+            {
+                _logger.LogWarning(
+                    "Development Mode: Truncating all data in 5 seconds. Terminate application NOW if using production data.");
+                Thread.Sleep(5000);
+            }
+
             dbContext.RunScript("truncateAll.sql");
             _logger.LogInformation("Database truncated. Seeding dev data");
             dbContext.RunScript("devSeed.sql");
         }
+        
+        // Setup scheduled jobs
+        var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+        JobManager.Initialize(new SchedulerRegistry(serviceScopeFactory));
+        
         app.Run();
     }
 

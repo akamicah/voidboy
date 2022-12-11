@@ -7,11 +7,11 @@ using DirectoryService.Shared.Attributes;
 namespace DirectoryService.DAL;
 
 [ScopedRegistration]
-public class EmailQueueRepository : IEmailQueueRepository
+public class EmailQueueEntityRepository : IEmailQueueEntityRepository
 {
     private readonly DbContext _dbContext;
 
-    public EmailQueueRepository(DbContext db)
+    public EmailQueueEntityRepository(DbContext db)
     {
         _dbContext = db;
     }
@@ -38,7 +38,7 @@ public class EmailQueueRepository : IEmailQueueRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<QueuedEmail>(
-            @"SELECT * FROM emailQueue WHERE id = :id AND deleted = FALSE",
+            @"SELECT * FROM emailQueue WHERE id = :id",
             new
             {
                 id
@@ -51,7 +51,7 @@ public class EmailQueueRepository : IEmailQueueRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var emails = await con.QueryAsync<QueuedEmail>(
-            @"SELECT * FROM emailQueue WHERE deleted = FALSE AND sent = FALSE
+            @"SELECT * FROM emailQueue WHERE sent = FALSE
                  AND sendOn < CURRENT_TIMESTAMP ORDER BY sendOn LIMIT @limit",
             new
             {
@@ -68,32 +68,21 @@ public class EmailQueueRepository : IEmailQueueRepository
 
     public async Task Delete(QueuedEmail entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"DELETE FROM emailQueue WHERE id = :id",
+            new
+            {
+                entity.Id
+            });
     }
 
     public async Task Delete(IEnumerable<QueuedEmail> entities)
     {
-        throw new NotImplementedException();
-    }
-    
-    public async Task HardDelete(QueuedEmail entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task HardDelete(IEnumerable<QueuedEmail> entities)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Delete all entities where deleted = true
-    /// </summary>
-    public async Task PurgeDeleted()
-    {
         using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(@"DELETE FROM emailQueue WHERE deleted = TRUE");
+        await con.ExecuteAsync(
+            @"DELETE FROM emailQueue WHERE id = :id",
+            entities.Select(e => e.Id)
+                .Select(i => new { Id = i }).ToArray());
     }
-
-
 }

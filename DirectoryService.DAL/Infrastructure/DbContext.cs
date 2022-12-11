@@ -10,7 +10,7 @@ namespace DirectoryService.DAL.Infrastructure;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DbContext
 {
-    private readonly string _dbConnectionString;
+    private readonly string? _dbConnectionString;
 
     public DbContext()
     {

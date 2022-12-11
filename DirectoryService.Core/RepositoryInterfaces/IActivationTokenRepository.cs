@@ -2,7 +2,7 @@ using DirectoryService.Core.Entities;
 
 namespace DirectoryService.Core.RepositoryInterfaces;
 
-public interface IActivationTokenRepository : IIdentifiedInterface<ActivationToken>
+public interface IActivationTokenRepository : IGuidIdentifiedEntityRepository<ActivationToken>
 {
-    
+    public Task ExpireTokens();
 }

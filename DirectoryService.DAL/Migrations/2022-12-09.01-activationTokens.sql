@@ -4,8 +4,7 @@ CREATE TABLE activationTokens
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updatedAt TIMESTAMP DEFAULT NULL,
     accountId UUID REFERENCES users(id) ON DELETE CASCADE,
-    expires TIMESTAMP NOT NULL,
-    deleted BOOL DEFAULT FALSE
+    expires TIMESTAMP NOT NULL
 );
 
 CREATE TRIGGER activationTokens_updated_at

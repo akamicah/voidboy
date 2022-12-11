@@ -9,8 +9,7 @@ CREATE TABLE emailQueue
     sendOn TIMESTAMP NOT NULL,
     attempt INT DEFAULT 0,
     sent BOOL DEFAULT FALSE,
-    sentOn TIMESTAMP DEFAULT NULL,
-    deleted BOOL DEFAULT FALSE
+    sentOn TIMESTAMP DEFAULT NULL
 );
 
 CREATE TRIGGER emailQueue_updated_at

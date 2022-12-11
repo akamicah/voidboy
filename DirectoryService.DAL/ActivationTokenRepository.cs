@@ -36,7 +36,7 @@ public class ActivationTokenRepository : IActivationTokenRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<ActivationToken>(
-            @"SELECT * FROM activationTokens WHERE id = :id AND deleted = FALSE",
+            @"SELECT * FROM activationTokens WHERE id = :id",
             new
             {
                 id
@@ -52,36 +52,27 @@ public class ActivationTokenRepository : IActivationTokenRepository
 
     public async Task Delete(ActivationToken entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"DELETE FROM activationTokens WHERE id = :id",
+            new
+            {
+                entity.Id
+            });
     }
 
     public async Task Delete(IEnumerable<ActivationToken> entities)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task HardDelete(ActivationToken entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task HardDelete(IEnumerable<ActivationToken> entities)
-    {
-        throw new NotImplementedException();
-    }
-    
-    /// <summary>
-    /// Delete all entities where deleted = true
-    /// </summary>
-    public async Task PurgeDeleted()
-    {
         using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(@"DELETE FROM activationTokens WHERE deleted = TRUE");
+        await con.ExecuteAsync(
+            @"DELETE FROM activationTokens WHERE id = :id",
+            entities.Select(e => e.Id)
+                .Select(i => new { Id = i }).ToArray());
     }
-    
+
     public async Task ExpireTokens()
     {
         using var con = await _dbContext.CreateConnectionAsync();
-        //TODO
+        await con.ExecuteAsync(@"DELETE FROM activationTokens WHERE expires < CURRENT_TIMESTAMP");
     }
 }
