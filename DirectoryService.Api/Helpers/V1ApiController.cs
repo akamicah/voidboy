@@ -66,10 +66,15 @@ public abstract class V1ApiController : ControllerBase
             throw new UnauthorisedApiException();
     }
 
-    protected PaginatedRequest PaginatedRequest()
+    protected PaginatedRequest PaginatedRequest(string? orderBy = null, bool orderAscending = true, string? searchOn = null)
     {
-        var paginationFilter = new PaginatedRequest();
-
+        var paginationFilter = new PaginatedRequest()
+        {
+            OrderBy = orderBy,
+            OrderAscending = orderAscending,
+            SearchOn = searchOn
+        };
+        
         var queryParams =
             Request.Query.Keys.ToDictionary<string?, string, string>(key => key.ToLower(), key => Request.Query[key]!);
 
