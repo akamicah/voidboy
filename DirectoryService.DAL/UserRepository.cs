@@ -50,7 +50,9 @@ public class UserRepository : BaseRepository<User>, IUserRepository
                  authHash = @authHash,
                  activated = @activated,
                  role = @role,
-                 state = @state
+                 state = @state,
+                 connectionGroup = @connectionGroup,
+                 friendGroup = @friendsGroup
                  WHERE id = @id;",
             new
             {
@@ -60,7 +62,9 @@ public class UserRepository : BaseRepository<User>, IUserRepository
                 entity.AuthHash,
                 entity.Activated,
                 entity.Role,
-                entity.State
+                entity.State,
+                entity.ConnectionGroup,
+                entity.FriendsGroup
             });
 
         return await Retrieve(entity.Id);
@@ -95,17 +99,24 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<PaginatedResponse<User>> ListRelativeUsers(Guid relativeUser, PaginatedRequest page, bool includeSelf)
     {
-        const string sqlTemplate = $@"SELECT * FROM 
-             (SELECT u.*, CASE WHEN u.id = @selfId AND @includeSelf = TRUE THEN TRUE 
-            ELSE CASE WHEN connection.isConnection = TRUE THEN TRUE ELSE FALSE END END connection
-            FROM users u LEFT JOIN (SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END AS isConnection,
-            uc.userAId FROM userConnections uc WHERE userBId = @selfId GROUP BY userAId)
-            AS connection ON connection.userAId = u.id) AS t ";
+        const string sqlTemplate = $@"SELECT * FROM (SELECT u.*, CASE WHEN u.id = @selfId THEN TRUE ELSE FALSE END AS self,
+                      COALESCE(connections.isConnection, FALSE) AS connection,
+                      COALESCE(friends.isFriend, FALSE) AS friend FROM users u
+LEFT JOIN (SELECT CASE WHEN ugm.userid IS NULL THEN FALSE ELSE TRUE END AS isConnection, ugm.userId AS userId
+           FROM userGroupMembers ugm
+         JOIN users u ON u.id = @selfId
+           WHERE ugm.userGroupId = u.connectionGroup GROUP BY ugm.userId) AS connections ON connections.userId = u.id
+LEFT JOIN (SELECT CASE WHEN ugm.userid IS NULL THEN FALSE ELSE TRUE END AS isFriend, ugm.userId As userId
+           FROM userGroupMembers ugm
+                    JOIN users u ON u.id = @selfId
+           WHERE ugm.userGroupId = u.friendGroup GROUP BY ugm.userId) AS friends ON friends.userId = u.id) AS relativeUsers ";
 
         var dynamicParameters = new DynamicParameters();
         dynamicParameters.Add("selfId", relativeUser);
-        dynamicParameters.Add("includeSelf", includeSelf);
 
-        return await QueryDynamic(sqlTemplate, "t", page, dynamicParameters);
+        if(!includeSelf)
+            page.Where.Add("self", false);
+
+            return await QueryDynamic(sqlTemplate, "relativeUsers", page, dynamicParameters);
     }
 }

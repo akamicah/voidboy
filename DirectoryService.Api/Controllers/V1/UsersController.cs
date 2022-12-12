@@ -20,6 +20,9 @@ public sealed class UsersController : V1ApiController
         _userService = userService;
     }
 
+    /// <summary>
+    /// Return a list of users relative to the requester.
+    /// </summary>
     [HttpGet]
     [Authorise]
     public async Task<IActionResult> GetUsers()

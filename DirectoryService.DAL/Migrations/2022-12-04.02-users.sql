@@ -12,6 +12,8 @@ CREATE TABLE users
     role SMALLINT NOT NULL,
     state SMALLINT DEFAULT 0,
     creatorIp TEXT DEFAULT '0.0.0.0',
+    connectionGroup UUID DEFAULT NULL,
+    friendGroup UUID DEFAULT NULL,
     language TEXT DEFAULT 'en'
 );
 

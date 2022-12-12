@@ -26,13 +26,15 @@ public sealed class UserService
     private readonly ServiceConfiguration _configuration;
     private readonly ISessionProvider _sessionProvider;
     private readonly UserActivationService _userActivationService;
+    private readonly IUserGroupRepository _userGroupRepository;
 
     public UserService(ILogger<UserService> logger,
         RegisterUserValidator registerUserValidator,
         IUserRepository userRepository,
         ISessionProvider sessionProvider,
         UserActivationService userActivationService,
-        IUserProfileRepository userProfileRepository)
+        IUserProfileRepository userProfileRepository,
+        IUserGroupRepository userGroupRepository)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
@@ -41,6 +43,7 @@ public sealed class UserService
         _sessionProvider = sessionProvider;
         _userActivationService = userActivationService;
         _userProfileRepository = userProfileRepository;
+        _userGroupRepository = userGroupRepository;
     }
 
     public async Task<User?> GetUserFromId(Guid id)
@@ -62,6 +65,9 @@ public sealed class UserService
         return await _userRepository.FindByUsername(needle.ToLower());
     }
     
+    /// <summary>
+    /// Fetch a list of users relative to the requester session
+    /// </summary>
     public async Task<PaginatedResponse<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
     {
         if(!page.AsAdmin)
@@ -113,6 +119,9 @@ public sealed class UserService
         };
     }
 
+    /// <summary>
+    /// Register a new user
+    /// </summary>
     public async Task<UserRegisteredDto> RegisterUser(RegisterUserDto registerUserDto)
     {
         await _registerUserValidator.ValidateAndThrowAsync(registerUserDto);
@@ -146,31 +155,59 @@ public sealed class UserService
             CreatorIp = registerUserDto.OriginIp?.ToString() ?? IPAddress.Any.ToString()
         };
 
-        var response = await _userRepository.Create(newUser);
+        var createdUser = await _userRepository.Create(newUser);
 
+       // Create default profile
         await _userProfileRepository.Create(new UserProfile()
         {
-            UserId = response.Id,
+            UserId = createdUser.Id,
             HeroImageUrl = "",
             ThumbnailImageUrl = "",
             TinyImageUrl = ""
         });
+        
+        // Create default connection and friend user groups
+        var connectionsGroup = await _userGroupRepository.Create(new UserGroup()
+        {
+            Name = "",
+            Description = registerUserDto.Username + "'s Connections",
+            Internal = true,
+            Rating = MaturityRating.Everyone,
+            OwnerUserId = createdUser.Id
+        });
+
+        var friendsGroup = await _userGroupRepository.Create(new UserGroup()
+        {
+            Name = "",
+            Description = registerUserDto.Username + "'s Friends",
+            Internal = true,
+            Rating = MaturityRating.Everyone,
+            OwnerUserId = createdUser.Id
+        });
+
+        createdUser.ConnectionGroup = connectionsGroup.Id;
+        createdUser.FriendsGroup = friendsGroup.Id;
+
+        await _userRepository.Update(createdUser);
 
         _logger.LogInformation("New user registration. Username: {username}, Email: {email}",
             registerUserDto.Username, registerUserDto.Email!.MaskEmail());
 
         if (_configuration.Registration.RequireEmailVerification)
-            await _userActivationService.SendUserActivationRequest(response!);
+            await _userActivationService.SendUserActivationRequest(createdUser!);
         
         return new UserRegisteredDto
         {
-            AccountId = response!.Id.ToString(),
-            Username = response.Username,
+            AccountId = createdUser!.Id.ToString(),
+            Username = createdUser.Username,
             AccountAwaitingVerification = _configuration.Registration.RequireEmailVerification,
-            AccountIsActive = response.Activated
+            AccountIsActive = createdUser.Activated
         };
     }
     
+    /// <summary>
+    /// Attempt to login user
+    /// </summary>
     public async Task<User> AuthenticateUser(string? username, string? password)
     {
         if(username == null || password == null)
@@ -194,6 +231,9 @@ public sealed class UserService
         throw new UserNotVerifiedApiException();
     }
 
+    /// <summary>
+    /// Delete a user
+    /// </summary>
     public async Task DeleteUser(Guid userId)
     {
         var user = await _userRepository.Retrieve(userId);

@@ -14,4 +14,9 @@ public class User : BaseEntity
     public UserRole Role;
     public string? CreatorIp;
     public string? Language;
+    public Guid ConnectionGroup;
+    public Guid FriendsGroup;
+    public bool? Self { get; set; }
+    public bool? Connection { get; set; }
+    public bool? Friend { get; set; }
 }
