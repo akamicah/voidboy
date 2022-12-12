@@ -150,6 +150,6 @@ public sealed class UserService
             throw new UserNotFoundApiException();
 
         _logger.LogInformation("Deleting user {username} - User ID: {uid}", user.Username, user.Id);
-        await _userRepository.Delete(user);
+        await _userRepository.Delete(user.Id);
     }
 }

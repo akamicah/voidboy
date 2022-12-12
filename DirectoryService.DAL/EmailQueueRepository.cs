@@ -7,18 +7,16 @@ using DirectoryService.Shared.Attributes;
 namespace DirectoryService.DAL;
 
 [ScopedRegistration]
-public class EmailQueueEntityRepository : IEmailQueueEntityRepository
+public class EmailQueueEntityRepository : BaseRepository<QueuedEmail>, IEmailQueueEntityRepository
 {
-    private readonly DbContext _dbContext;
-
-    public EmailQueueEntityRepository(DbContext db)
+    public EmailQueueEntityRepository(DbContext db) : base(db)
     {
-        _dbContext = db;
+        TableName = "emailQueue";
     }
     
     public async Task<QueuedEmail?> Create(QueuedEmail entity)
     {
-        using var con = await _dbContext.CreateConnectionAsync();
+        using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
             @"INSERT INTO emailQueue (accountId, model, type, sendOn)
                 VALUES( @accountId, @model, @type, @sendOn )
@@ -33,23 +31,11 @@ public class EmailQueueEntityRepository : IEmailQueueEntityRepository
 
         return await Retrieve(id);
     }
-    
-    public async Task<QueuedEmail?> Retrieve(Guid id)
-    {
-        using var con = await _dbContext.CreateConnectionAsync();
-        var entity = await con.QueryFirstOrDefaultAsync<QueuedEmail>(
-            @"SELECT * FROM emailQueue WHERE id = :id",
-            new
-            {
-                id
-            });
 
-        return entity;
-    }
 
     public async Task<IEnumerable<QueuedEmail>> GetNextQueuedEmails(int limit = 1000)
     {
-        using var con = await _dbContext.CreateConnectionAsync();
+        using var con = await DbContext.CreateConnectionAsync();
         var emails = await con.QueryAsync<QueuedEmail>(
             @"SELECT * FROM emailQueue WHERE sent = FALSE
                  AND sendOn < CURRENT_TIMESTAMP ORDER BY sendOn LIMIT @limit",
@@ -62,7 +48,7 @@ public class EmailQueueEntityRepository : IEmailQueueEntityRepository
     
     public async Task<QueuedEmail?> Update(QueuedEmail entity)
     {
-        using var con = await _dbContext.CreateConnectionAsync();
+        using var con = await DbContext.CreateConnectionAsync();
         await con.ExecuteAsync(
             @"UPDATE emailQueue SET sent = @sent, sentOn = @sentOn, sendOn = @sendOn, attempt = @attempt WHERE id = @id",
             new
@@ -77,29 +63,9 @@ public class EmailQueueEntityRepository : IEmailQueueEntityRepository
         return await Retrieve(entity.Id);
     }
 
-    public async Task Delete(QueuedEmail entity)
-    {
-        using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(
-            @"DELETE FROM emailQueue WHERE id = :id",
-            new
-            {
-                entity.Id
-            });
-    }
-
-    public async Task Delete(IEnumerable<QueuedEmail> entities)
-    {
-        using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(
-            @"DELETE FROM emailQueue WHERE id = :id",
-            entities.Select(e => e.Id)
-                .Select(i => new { Id = i }).ToArray());
-    }
-
     public async Task ClearSentEmails(DateTime cutoffDate)
     {
-        using var con = await _dbContext.CreateConnectionAsync();
+        using var con = await DbContext.CreateConnectionAsync();
         await con.ExecuteAsync(
             @"DELETE FROM emailQueue WHERE sent=TRUE AND sentOn < @cutoffDate", new
             {

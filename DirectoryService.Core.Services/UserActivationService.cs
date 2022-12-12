@@ -46,7 +46,7 @@ public class UserActivationService
         
         user.Activated = true;
         await _userRepository.Update(user);
-        await _activationTokenRepository.Delete(token);
+        await _activationTokenRepository.Delete(token.Id);
     }
     
     public async Task SendUserActivationRequest(User user)

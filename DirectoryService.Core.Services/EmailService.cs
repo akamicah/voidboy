@@ -71,7 +71,7 @@ public class EmailService : IEmailService
         if (email.Attempt == 3)
         {
             _logger.LogInformation("Email {id} failed to send 3 times. Deleting.", email.Id);
-            await _emailQueueEntityRepository.Delete(email);
+            await _emailQueueEntityRepository.Delete(email.Id);
             return;
         }
         _logger.LogInformation("Re-queueing email {id} for sending in 30 seconds", email.Id);

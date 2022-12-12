@@ -51,9 +51,6 @@ public class SessionTokenService
         if(tokenEntity.AccountId != account)
             throw new InvalidTokenApiException();
 
-        await _sessionTokenRepository.Delete(new SessionToken()
-        {
-            Id = token
-        });
+        await _sessionTokenRepository.Delete(token);
     }
 }

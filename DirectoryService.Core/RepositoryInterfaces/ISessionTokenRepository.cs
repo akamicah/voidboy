@@ -3,7 +3,7 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Core.RepositoryInterfaces;
 
-public interface ISessionTokenRepository : IGuidIdentifiedEntityRepository<SessionToken>
+public interface ISessionTokenRepository : IBaseRepository<SessionToken>
 {
     public Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page);
     public Task<SessionToken?> FindByRefreshToken(Guid refreshToken);
