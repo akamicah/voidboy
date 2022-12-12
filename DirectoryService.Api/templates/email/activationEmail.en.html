@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="x-apple-disable-message-reformatting">
+    <title></title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        p {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<p>Dear {{ Username }},
+<p>
+<p>Before you can access your Overte account, you must first verify your e-mail address.</p>
+<p>Please click the link below to activate your account:</p>
+<a href="{{ ActivationUrl }}">{{ ActivationUrl }}</a>
+<p>This must be done within {{ Timeout }} of your registration.</p>
+<p>Kind regards,</p>
+<p>Overte e.V.</p>
+</body>
+</html>

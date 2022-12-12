@@ -13,4 +13,5 @@ public class User : GuidIdentifiedEntity
     public bool Activated;
     public UserRole Role;
     public string? CreatorIp;
+    public string? Language;
 }

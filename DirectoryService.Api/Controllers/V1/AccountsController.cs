@@ -1,6 +1,7 @@
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
+using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,13 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class AccountsController : V1ApiController
 {
+    private UserActivationService _userActivationService;
+
+    public AccountsController(UserActivationService userActivationService)
+    {
+        _userActivationService = userActivationService;
+    }
+    
     /// <summary>
     /// Fetch a list of accounts
     /// </summary>
@@ -107,12 +115,29 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Email verification endpoint
     /// </summary>
-    [HttpDelete("verify/email")]
-    [Authorise]
-    public async Task<IActionResult> EmailVerificationEndpoint()
+    [HttpGet("verify/email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
     {
-        //TODO
-        throw new NotImplementedException();
+        if (!Guid.TryParse(verification.AccountId, out var accountId))
+            return Failure();
+        
+        if (!Guid.TryParse(verification.VerificationToken, out var verificationToken))
+            return Failure();
+
+        await _userActivationService.ReceiveUserActivationResponse(accountId, verificationToken);
+
+        //TODO Redirect to configured route
+        return new RedirectResult("https://overte.org");
+    }
+
+    public class EmailVerificationModel
+    {
+        [FromQuery(Name = "a")]
+        public string? AccountId { get; set; }
+        
+        [FromQuery(Name = "v")]
+        public string? VerificationToken { get; set; }
     }
 
 }

@@ -11,7 +11,8 @@ CREATE TABLE users
     activated BOOL,
     role SMALLINT NOT NULL,
     state SMALLINT DEFAULT 0,
-    creatorIp TEXT DEFAULT '0.0.0.0'
+    creatorIp TEXT DEFAULT '0.0.0.0',
+    language TEXT DEFAULT 'en'
 );
 
 CREATE TRIGGER users_updated_at

@@ -60,7 +60,27 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> Update(User entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"UPDATE users SET email = @email,
+                 authVersion = @authVersion,
+                 authHash = @authHash,
+                 activated = @activated,
+                 role = @role,
+                 state = @state
+                 WHERE id = @id;",
+            new
+            {
+                entity.Id,
+                entity.Email,
+                entity.AuthVersion,
+                entity.AuthHash,
+                entity.Activated,
+                entity.Role,
+                entity.State
+            });
+
+        return await Retrieve(entity.Id);
     }
 
     public async Task Delete(User entity)

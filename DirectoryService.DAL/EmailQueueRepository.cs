@@ -59,11 +59,22 @@ public class EmailQueueEntityRepository : IEmailQueueEntityRepository
             });
         return emails;
     }
-
     
     public async Task<QueuedEmail?> Update(QueuedEmail entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"UPDATE emailQueue SET sent = @sent, sentOn = @sentOn, sendOn = @sendOn, attempt = @attempt WHERE id = @id",
+            new
+            {
+                entity.Id,
+                entity.Sent,
+                entity.SendOn,
+                entity.SentOn,
+                entity.Attempt
+            });
+
+        return await Retrieve(entity.Id);
     }
 
     public async Task Delete(QueuedEmail entity)

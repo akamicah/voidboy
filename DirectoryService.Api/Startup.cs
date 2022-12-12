@@ -58,12 +58,6 @@ public class Startup
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "templates/email/");
         
-        var options = new LiquidRendererOptions
-        {
-            FileProvider = new PhysicalFileProvider(baseDir),
-            
-        };
-
         builder.Services.AddFluentEmail(
                 ServicesConfigContainer.Config.Smtp.SenderEmail,
                 ServicesConfigContainer.Config.Smtp.SenderName
@@ -138,7 +132,7 @@ public class Startup
         
         // Setup scheduled jobs
         var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-        JobManager.Initialize(new SchedulerRegistry(serviceScopeFactory));
+        JobManager.Initialize(new JobRegistry(serviceScopeFactory));
         
         app.Run();
     }

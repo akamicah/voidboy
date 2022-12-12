@@ -10,7 +10,7 @@
   "MetaverseInfo": {
     "Name": "Overte",
     "Nickname": "Overte",
-    "ServerUrl": "localhost",
+    "ServerUrl": "http://127.0.0.1:9400",
     "IceServerUrl": "localhost",
     "DashboardUrl": "localhost"
   },
@@ -49,11 +49,11 @@
   },
   "Smtp": {
     "Enable": true,
-    "SendFrom": "noreply@overte.org",
+    "SenderEmail": "noreply@overte.org",
+    "SenderName": "Overte Directory Service",
     "Host": "127.0.0.1",
     "Port": 1025,
-    "Secure": false,
-    "Username": "",
-    "Password": ""
+    "Username": "emailUser",
+    "Password": "emailPassword"
   }
 }
