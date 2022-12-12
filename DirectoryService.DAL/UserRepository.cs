@@ -49,7 +49,7 @@ public class UserRepository : IUserRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<User>(
-            @"SELECT * FROM users WHERE id = :id AND deleted = FALSE",
+            @"SELECT * FROM users WHERE id = :id",
             new
             {
                 id
@@ -60,43 +60,54 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> Update(User entity)
     {
-        throw new NotImplementedException();
-    }
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"UPDATE users SET email = @email,
+                 authVersion = @authVersion,
+                 authHash = @authHash,
+                 activated = @activated,
+                 role = @role,
+                 state = @state
+                 WHERE id = @id;",
+            new
+            {
+                entity.Id,
+                entity.Email,
+                entity.AuthVersion,
+                entity.AuthHash,
+                entity.Activated,
+                entity.Role,
+                entity.State
+            });
 
-    public async Task SoftDelete(User entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<User> entities)
-    {
-        throw new NotImplementedException();
+        return await Retrieve(entity.Id);
     }
 
     public async Task Delete(User entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"DELETE FROM users WHERE id = :id",
+            new
+            {
+                entity.Id
+            });
     }
 
     public async Task Delete(IEnumerable<User> entities)
     {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Delete all entities where deleted = true
-    /// </summary>
-    public async Task PurgeDeleted()
-    {
         using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(@"DELETE FROM users WHERE deleted = TRUE");
+        await con.ExecuteAsync(
+            @"DELETE FROM users WHERE id = :id",
+            entities.Select(e => e.Id)
+                .Select(i => new { Id = i }).ToArray());
     }
 
     public async Task<User?> FindByUsername(string username)
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<User>(
-            @"SELECT * FROM users WHERE LOWER(username) = :username AND deleted = FALSE",
+            @"SELECT * FROM users WHERE LOWER(username) = :username",
             new
             {
                 username
@@ -109,7 +120,7 @@ public class UserRepository : IUserRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<User>(
-            @"SELECT * FROM users WHERE email = :emailAddress AND deleted = FALSE",
+            @"SELECT * FROM users WHERE email = :emailAddress",
             new
             {
                 emailAddress

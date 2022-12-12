@@ -12,7 +12,7 @@ CREATE TABLE users
     role SMALLINT NOT NULL,
     state SMALLINT DEFAULT 0,
     creatorIp TEXT DEFAULT '0.0.0.0',
-    deleted BOOL DEFAULT FALSE
+    language TEXT DEFAULT 'en'
 );
 
 CREATE TRIGGER users_updated_at

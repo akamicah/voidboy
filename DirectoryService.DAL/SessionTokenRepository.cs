@@ -54,45 +54,42 @@ public class SessionTokenRepository : ISessionTokenRepository
         throw new NotImplementedException();
     }
 
-    public async Task SoftDelete(SessionToken entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task SoftDelete(IEnumerable<SessionToken> entities)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task Delete(SessionToken entity)
     {
-        throw new NotImplementedException();
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"DELETE FROM sessionTokens WHERE id = :id",
+            new
+            {
+                entity.Id
+            });
     }
 
     public async Task Delete(IEnumerable<SessionToken> entities)
     {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Delete all entities where deleted = true
-    /// </summary>
-    public async Task PurgeDeleted()
-    {
         using var con = await _dbContext.CreateConnectionAsync();
-        await con.ExecuteAsync(@"DELETE FROM sessionTokens WHERE deleted = TRUE");
+        await con.ExecuteAsync(
+            @"DELETE FROM sessionTokens WHERE id = :id",
+            entities.Select(e => e.Id)
+                .Select(i => new { Id = i }).ToArray());
     }
 
     public async Task<SessionToken?> FindByRefreshToken(Guid refreshToken)
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<SessionToken>(
-            @"SELECT * FROM sessionTokens WHERE refreshToken = :refreshToken AND deleted = FALSE",
+            @"SELECT * FROM sessionTokens WHERE refreshToken = :refreshToken",
             new
             {
                 refreshToken
             });
 
         return entity;
+    }
+
+    public async Task ExpireTokens()
+    {
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(@"DELETE FROM sessionTokens WHERE expires < CURRENT_TIMESTAMP");
     }
 }

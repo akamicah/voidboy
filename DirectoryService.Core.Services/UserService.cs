@@ -24,17 +24,20 @@ public sealed class UserService
     private readonly IUserRepository _userRepository;
     private readonly ServiceConfiguration _configuration;
     private readonly ISessionProvider _sessionProvider;
+    private readonly UserActivationService _userActivationService;
 
     public UserService(ILogger<UserService> logger,
         RegisterUserValidator registerUserValidator,
         IUserRepository userRepository,
-        ISessionProvider sessionProvider)
+        ISessionProvider sessionProvider,
+        UserActivationService userActivationService)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
         _userRepository = userRepository;
         _configuration = ServicesConfigContainer.Config;
         _sessionProvider = sessionProvider;
+        _userActivationService = userActivationService;
     }
 
     public async Task<PaginatedResponse<User>> ListUsers(PaginatedRequest page)
@@ -61,6 +64,15 @@ public sealed class UserService
         
         var auth = CryptographyService.GenerateAuth(registerUserDto.Password!);
 
+        var role = UserRole.User;
+
+        if (_configuration.Registration.DefaultAdminAccount != "" &&
+            registerUserDto.Username == _configuration.Registration.DefaultAdminAccount)
+        {
+            _logger.LogWarning("Default administrator account being registered: {username}", registerUserDto.Username);
+            role = UserRole.Admin;
+        }
+
         var newUser = new User()
         {
             Username = registerUserDto.Username!,
@@ -68,14 +80,17 @@ public sealed class UserService
             Activated = !_configuration.Registration.RequireEmailVerification,
             AuthVersion = auth.Version,
             AuthHash = auth.Hash,
-            Role = UserRole.User,
-            CreatorIp = registerUserDto.OriginIp.ToString()
+            Role = role,
+            CreatorIp = registerUserDto.OriginIp?.ToString() ?? IPAddress.Any.ToString()
         };
 
         var response = await _userRepository.Create(newUser);
 
         _logger.LogInformation("New user registration. Username: {username}, Email: {email}",
             registerUserDto.Username, registerUserDto.Email!.MaskEmail());
+
+        if (_configuration.Registration.RequireEmailVerification)
+            await _userActivationService.SendUserActivationRequest(response!);
         
         return new UserRegisteredDto
         {

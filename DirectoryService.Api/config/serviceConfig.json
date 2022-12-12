@@ -10,7 +10,7 @@
   "MetaverseInfo": {
     "Name": "Overte",
     "Nickname": "Overte",
-    "ServerUrl": "localhost",
+    "ServerUrl": "http://127.0.0.1:9400",
     "IceServerUrl": "localhost",
     "DashboardUrl": "localhost"
   },
@@ -36,11 +36,10 @@
   "Registration": {
     "MinUsernameLength": 3,
     "MaxUsernameLength": 32,
-    "RequireEmailVerification": false,
+    "RequireEmailVerification": true,
     "EmailVerificationTimeoutMinutes": 1440,
-    "EmailVerificationTemplate": "./templates/email/registration.html",
-    "EmailVerificationSuccessRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailSuccess.html",
-    "EmailVerificationFailRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailFailure.html?r=FAILURE_REASON",
+    "EmailVerificationSuccessRedirect": "http://127.0.0.1:9400/static/email-verified",
+    "EmailVerificationFailRedirect": "http://127.0.0.1:9400/static/verification-fail",
     "DefaultAdminAccount": ""
   },
   "Tokens": {
@@ -49,10 +48,12 @@
     "OwnerTokenLifetimeHours": 168
   },
   "Smtp": {
+    "Enable": true,
+    "SenderEmail": "noreply@overte.org",
+    "SenderName": "Overte Directory Service",
     "Host": "127.0.0.1",
     "Port": 1025,
-    "Secure": false,
-    "Username": "",
-    "Password": ""
+    "Username": "emailUser",
+    "Password": "emailPassword"
   }
 }

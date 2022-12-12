@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentScheduler" Version="5.5.1" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
@@ -21,6 +22,20 @@
 
     <ItemGroup>
       <Compile Remove="Filters\UsersPaginationFilter.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="templates/email/*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+
+        <Content Include="static/*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ScheduledTasks" />
     </ItemGroup>
 
 </Project>

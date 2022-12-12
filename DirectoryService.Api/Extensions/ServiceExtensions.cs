@@ -1,4 +1,5 @@
 using System.Reflection;
+using DirectoryService.Api.Helpers;
 using DirectoryService.Api.Providers;
 using DirectoryService.Core.Services;
 using DirectoryService.Core.Services.Interfaces;
@@ -13,32 +14,13 @@ namespace DirectoryService.Api.Extensions;
 public static class ServiceExtensions
 {
     /// <summary>
-    /// Fetch a list of all assemblies referenced
-    /// </summary>
-    /// <returns>IEnumerable of Assembly</returns>
-    private static IEnumerable<Assembly> GetListOfAssemblies()
-    {
-        var listOfAssemblies = new List<Assembly>();
-        var mainAsm = Assembly.GetEntryAssembly();
-        listOfAssemblies.Add(mainAsm!);
-        listOfAssemblies.AddRange(mainAsm!.GetReferencedAssemblies().Select(Assembly.Load));
-        return listOfAssemblies;
-    }
-
-    /// <summary>
     /// Register services for dependency injection
     /// </summary>
     /// <param name="serviceCollection"></param>
     /// <param name="configuration"></param>
     public static void RegisterServices(this IServiceCollection serviceCollection)
     {
-        var assemblies = GetListOfAssemblies()
-            .Append(Assembly.GetAssembly(typeof(SessionProvider)))
-            .Append(Assembly.GetAssembly(typeof(UserService)))
-            .Append(Assembly.GetAssembly(typeof(DatabaseMigrator)))
-            .Append(Assembly.GetAssembly(typeof(RegisterUserValidator)))
-            .Append(Assembly.GetAssembly(typeof(ServicesConfigContainer)))
-            .Distinct().ToArray();
+        var assemblies = GetProjectAssemblies.GetAssemblies();
 
         serviceCollection.AddScoped<ISessionProvider, SessionProvider>();
         serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

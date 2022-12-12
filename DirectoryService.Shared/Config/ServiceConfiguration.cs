@@ -54,7 +54,6 @@ public class ServiceConfiguration
         public int MaxUsernameLength { get; set; }
         public bool RequireEmailVerification { get; set; }
         public int EmailVerificationTimeoutMinutes { get; set; }
-        public string? EmailVerificationTemplate { get; set; }
         public string? EmailVerificationSuccessRedirect { get; set; }
         public string? EmailVerificationFailRedirect { get; set; }
         public string? DefaultAdminAccount { get; set; }
@@ -78,6 +77,9 @@ public class ServiceConfiguration
 
     public class SmtpConfig
     {
+        public bool Enable { get; set; }
+        public string? SenderEmail { get; set; }
+        public string? SenderName { get; set; }
         public string? Host { get; set; }
         public int Port { get; set; }
         public bool Secure { get; set; }

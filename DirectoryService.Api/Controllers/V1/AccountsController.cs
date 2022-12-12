@@ -1,7 +1,9 @@
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
+using DirectoryService.Core.Services;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -11,6 +13,15 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class AccountsController : V1ApiController
 {
+    private readonly UserActivationService _userActivationService;
+    private readonly ServiceConfiguration _configuration;
+
+    public AccountsController(UserActivationService userActivationService)
+    {
+        _userActivationService = userActivationService;
+        _configuration = ServicesConfigContainer.Config;
+    }
+    
     /// <summary>
     /// Fetch a list of accounts
     /// </summary>
@@ -107,12 +118,34 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Email verification endpoint
     /// </summary>
-    [HttpDelete("verify/email")]
-    [Authorise]
-    public async Task<IActionResult> EmailVerificationEndpoint()
+    [HttpGet("verify/email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
     {
-        //TODO
-        throw new NotImplementedException();
+        if (!Guid.TryParse(verification.AccountId, out var accountId))
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+        
+        if (!Guid.TryParse(verification.VerificationToken, out var verificationToken))
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+
+        try
+        {
+            await _userActivationService.ReceiveUserActivationResponse(accountId, verificationToken);
+            return new RedirectResult(_configuration.Registration.EmailVerificationSuccessRedirect!);
+        }
+        catch (Exception e)
+        {
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+        }
+    }
+
+    public class EmailVerificationModel
+    {
+        [FromQuery(Name = "a")]
+        public string? AccountId { get; set; }
+        
+        [FromQuery(Name = "v")]
+        public string? VerificationToken { get; set; }
     }
 
 }
