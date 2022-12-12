@@ -1,2 +1,2 @@
-INSERT INTO users(identityprovider, username, email, authversion, authhash, activated, role, state, creatorip, deleted)
-VALUES(0, 'test', 'test@test.com', 1, '$2a$11$HS3yWgq.xYajEY.H.iM4q.hVw3HsSMK0vSWnku/18/pXEvb9ubi36', true, 1, 0, '127.0.0.1', false);
+INSERT INTO users(identityprovider, username, email, authversion, authhash, activated, role, state, creatorip)
+VALUES(0, 'test', 'test@test.com', 1, '$2a$11$HS3yWgq.xYajEY.H.iM4q.hVw3HsSMK0vSWnku/18/pXEvb9ubi36', true, 1, 0, '127.0.0.1');

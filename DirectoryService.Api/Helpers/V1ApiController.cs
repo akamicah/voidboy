@@ -1,5 +1,8 @@
+using DirectoryService.Core.Entities;
+using DirectoryService.Core.Exceptions;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
+
 // ReSharper disable StringLiteralTypo
 
 namespace DirectoryService.Api.Helpers;
@@ -22,7 +25,7 @@ public abstract class V1ApiController : ControllerBase
             Data = result
         });
     }
-    
+
     protected static JsonResult Failure()
     {
         return new JsonResult(new
@@ -30,48 +33,82 @@ public abstract class V1ApiController : ControllerBase
             Status = "fail",
         });
     }
-    
+
     public class Response<T>
     {
         public string? Status { get; set; }
         public T? Data { get; set; }
     }
 
+    /// <summary>
+    /// Restrict the action to be performed only to self, unless asAdmin is defined and caller is an admin
+    /// </summary>
+    protected void RestrictToSelfOrAdmin(Guid userId)
+    {
+        var queryParams =
+            Request.Query.Keys.ToDictionary<string?, string, string>(key => key.ToLower(), key => Request.Query[key]!);
+
+        var callAsAdmin = false;
+        if (queryParams.ContainsKey("asadmin"))
+        {
+            if (bool.TryParse(queryParams["asadmin"], out var asAdmin))
+                callAsAdmin = asAdmin;
+        }
+        
+        var session = (Session?)Request.HttpContext.Items["Session"];
+        if (session == null)
+            throw new UnauthorisedApiException();
+        
+        if(callAsAdmin && session.Role != UserRole.Admin)
+            throw new UnauthorisedApiException();
+        
+        if(session.AccountId != userId && !callAsAdmin)
+            throw new UnauthorisedApiException();
+    }
+
     protected PaginatedRequest PaginatedRequest()
     {
         var paginationFilter = new PaginatedRequest();
-        var query = Request.Query;
-        
-        if (query.ContainsKey("filter"))
+
+        var queryParams =
+            Request.Query.Keys.ToDictionary<string?, string, string>(key => key.ToLower(), key => Request.Query[key]!);
+
+        if (queryParams.ContainsKey("filter"))
         {
-            foreach (var filters in query["filter"].Select(filterParam => 
-                         filterParam?.Split(",").ToList()).Where(filters => filters is not null))
+            foreach (var filter in queryParams["filter"].Split(","))
             {
-                if(filters is not null)
-                    paginationFilter.Filter!.AddRange(filters);
+                paginationFilter.Filter!.Add(filter);
             }
         }
 
-        if (query.ContainsKey("status"))
+        if (queryParams.ContainsKey("status"))
         {
-            foreach (var statuses in query["status"].Select(statusParam => 
-                         statusParam?.Split(",").ToList()).Where(statuses => statuses is not null))
+            foreach (var status in queryParams["status"].Split(",").ToList())
             {
-                if(statuses is not null)
-                    paginationFilter.Status!.AddRange(statuses);
+                paginationFilter.Status!.Add(status);
             }
         }
 
-        if (query.ContainsKey("search"))
+        if (queryParams.ContainsKey("search"))
+            paginationFilter.Search = queryParams["search"]!;
+
+        if (queryParams.ContainsKey("per_page"))
         {
-            paginationFilter.Search = query["search"]!;
+            if (int.TryParse(queryParams["per_page"], out var perPage))
+                paginationFilter.PageSize = perPage;
         }
-
-        if (!query.ContainsKey("isadmin")) return paginationFilter;
         
-        if(bool.TryParse(query["isadmin"], out var isAdmin))
-            paginationFilter.IsAdmin = isAdmin;
+        if (queryParams.ContainsKey("page"))
+        {
+            if (int.TryParse(queryParams["page"], out var page))
+                paginationFilter.Page = page;
+        }
+        
+        if (!queryParams.ContainsKey("asdmin")) return paginationFilter;
 
+        if (bool.TryParse(queryParams["asdmin"], out var asAdmin))
+            paginationFilter.AsAdmin = asAdmin;
+        
         return paginationFilter;
     }
 }

@@ -2,6 +2,7 @@ using Dapper;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.DAL.Infrastructure;
+using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
@@ -40,7 +41,7 @@ public class SessionTokenRepository : ISessionTokenRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         var entity = await con.QueryFirstOrDefaultAsync<SessionToken>(
-            @"SELECT * FROM sessionTokens WHERE id = :id AND deleted = FALSE",
+            @"SELECT * FROM sessionTokens WHERE id = :id",
             new
             {
                 id
@@ -91,5 +92,25 @@ public class SessionTokenRepository : ISessionTokenRepository
     {
         using var con = await _dbContext.CreateConnectionAsync();
         await con.ExecuteAsync(@"DELETE FROM sessionTokens WHERE expires < CURRENT_TIMESTAMP");
+    }
+    
+    public async Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page)
+    {
+        using var con = await _dbContext.CreateConnectionAsync();
+        var result = await con.QueryAsync<SessionToken>(
+            @"SELECT * FROM sessionTokens WHERE accountId = @accountId ORDER BY createdAt LIMIT @pageSize OFFSET @offset",
+            new
+            {
+                accountId,
+                pageSize = page.PageSize,
+                offset = (page.Page - 1) * page.PageSize
+            });
+
+        return new PaginatedResponse<SessionToken>()
+        {
+            Data = result,
+            Page = page.Page,
+            PageSize = page.PageSize
+        };
     }
 }

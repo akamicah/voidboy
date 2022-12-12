@@ -96,4 +96,14 @@ public class EmailQueueEntityRepository : IEmailQueueEntityRepository
             entities.Select(e => e.Id)
                 .Select(i => new { Id = i }).ToArray());
     }
+
+    public async Task ClearSentEmails(DateTime cutoffDate)
+    {
+        using var con = await _dbContext.CreateConnectionAsync();
+        await con.ExecuteAsync(
+            @"DELETE FROM emailQueue WHERE sent=TRUE AND sentOn < @cutoffDate", new
+            {
+                cutoffDate
+            });
+    }
 }

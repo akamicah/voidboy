@@ -11,5 +11,6 @@ public class JobRegistry : Registry
     {
         Schedule(() => new SendEmailsJob(serviceScopeFactory)).ToRunNow().AndEvery(5).Seconds();
         Schedule(() => new TokenExpiryJob(serviceScopeFactory)).ToRunNow().AndEvery(1).Minutes();
+        Schedule(() => new ClearSentEmailsJob(serviceScopeFactory)).ToRunNow().AndEvery(1).Days();
     }
 }

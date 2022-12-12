@@ -12,6 +12,11 @@ public class MockEmailService : IEmailService
         _queuedEmails = new List<QueuedEmail>();
     }
 
+    public async Task ClearSentEmails()
+    {
+        _queuedEmails.Clear();
+    }
+    
     public async Task QueueNewEmail(QueuedEmail queuedEmail)
     {
         _queuedEmails.Add(queuedEmail);

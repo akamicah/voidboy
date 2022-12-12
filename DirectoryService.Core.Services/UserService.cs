@@ -40,10 +40,29 @@ public sealed class UserService
         _userActivationService = userActivationService;
     }
 
+    public async Task<User?> GetUserFromId(Guid id)
+    {
+        return await _userRepository.Retrieve(id);
+    }
+
+    /// <summary>
+    /// Find a user either by user/account Id or by username.
+    /// </summary>
+    /// <param name="needle">User Id, Username</param>
+    /// <returns>Either the user entity or null</returns>
+    public async Task<User?> FindUser(string needle)
+    {
+        if (Guid.TryParse(needle, out var userId))
+        {
+            return await _userRepository.Retrieve(userId);
+        }
+        return await _userRepository.FindByUsername(needle.ToLower());
+    }
+    
     public async Task<PaginatedResponse<User>> ListUsers(PaginatedRequest page)
     {
         var requester = await _sessionProvider.GetRequesterSession();
-        if (page.IsAdmin && requester!.Role != UserRole.Admin)
+        if (page.AsAdmin && requester!.Role != UserRole.Admin)
             throw new UnauthorisedApiException();
 
         // TODO: Figure out what we're returning and make sure it's not excessive information
@@ -118,14 +137,19 @@ public sealed class UserService
         if(!CryptographyService.AuthenticatePassword(password, user.AuthHash!))
             throw new InvalidCredentialsApiException();
 
-        if (!user.Activated)
-            throw new UserNotVerifiedApiException();
-
-        return user;
+        if (user.Activated) return user;
+        
+        await _userActivationService.SendUserActivationRequest(user);
+        throw new UserNotVerifiedApiException();
     }
 
-    public async Task<User?> GetUserFromId(Guid id)
+    public async Task DeleteUser(Guid userId)
     {
-        return await _userRepository.Retrieve(id);
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        _logger.LogInformation("Deleting user {username} - User ID: {uid}", user.Username, user.Id);
+        await _userRepository.Delete(user);
     }
 }

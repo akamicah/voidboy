@@ -1,10 +1,18 @@
+using System.Text.Json.Serialization;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
+using DirectoryService.Core.Entities;
+using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
+
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable CollectionNeverQueried.Local
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 
 namespace DirectoryService.Api.Controllers.V1;
 
@@ -13,13 +21,19 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class AccountsController : V1ApiController
 {
-    private readonly UserActivationService _userActivationService;
     private readonly ServiceConfiguration _configuration;
-
-    public AccountsController(UserActivationService userActivationService)
+    private readonly UserActivationService _userActivationService;
+    private readonly SessionTokenService _sessionTokenService;
+    private readonly UserService _userService;
+    
+    public AccountsController(UserActivationService userActivationService,
+        SessionTokenService sessionTokenService,
+        UserService userService)
     {
-        _userActivationService = userActivationService;
         _configuration = ServicesConfigContainer.Config;
+        _userActivationService = userActivationService;
+        _sessionTokenService = sessionTokenService;
+        _userService = userService;
     }
     
     /// <summary>
@@ -36,10 +50,17 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Get account by account id
     /// </summary>
-    [HttpGet("{accountId:guid}")]
+    [HttpGet("{accountReference}")]
     [Authorise]
-    public async Task<IActionResult> GetAccount(Guid accountId)
+    public async Task<IActionResult> GetAccount(string accountReference)
     {
+        var account = await _userService.FindUser(accountReference);
+        if (account is null)
+            throw new UserNotFoundApiException();
+        
+        RestrictToSelfOrAdmin(account.Id);
+        
+        
         //TODO
         throw new NotImplementedException();
     }
@@ -51,7 +72,6 @@ public sealed class AccountsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> UpdateAccount(Guid accountId, [FromBody] UpdateAccountDto updateAccount)
     {
-
         updateAccount.AccountId = accountId;
         
         //TODO
@@ -61,12 +81,16 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// (Admin) Delete account by account id
     /// </summary>
-    [HttpDelete("{accountId:guid}")]
+    [HttpDelete("{accountReference}")]
     [Authorise(UserRole.Admin)]
-    public async Task<IActionResult> DeleteAccount(Guid accountId)
+    public async Task<IActionResult> DeleteAccount(string accountReference)
     {
-        //TODO
-        throw new NotImplementedException();
+        var account = await _userService.FindUser(accountReference);
+        if (account is null)
+            throw new UserNotFoundApiException();
+        
+        await _userService.DeleteUser(account.Id);
+        return Success();
     }
     
     /// <summary>
@@ -96,23 +120,100 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Return active token(s) for account
     /// </summary>
-    [HttpGet("{accountId:guid}/tokens")]
+    [HttpGet("{accountReference}/tokens")]
     [Authorise]
-    public async Task<IActionResult> GetAccountTokens(Guid accountId)
+    public async Task<IActionResult> GetAccountTokens(string accountReference)
     {
-        //TODO
-        throw new NotImplementedException();
+        var account = await _userService.FindUser(accountReference);
+        if (account is null)
+            throw new UserNotFoundApiException();
+        
+        RestrictToSelfOrAdmin(account.Id);
+        
+        var page = PaginatedRequest();
+
+        var result = await _sessionTokenService.ListAccountTokens(account.Id, page);
+        return new JsonResult(result.Data is not null ? new AccountTokenListModel(result.Data) : new AccountTokenListModel());
+    }
+
+    /// <summary>
+    /// Model for V1 of the API
+    /// </summary>
+    private class AccountTokenModel
+    {
+        [JsonPropertyName("id")] 
+        public Guid Id { get; set; }
+        
+        [JsonPropertyName("tokenid")]
+        public Guid TokenId { get; set; }
+        
+        [JsonPropertyName("token")]
+        public Guid Token { get; set; }
+        
+        [JsonPropertyName("refresh_token")]
+        public Guid RefreshToken { get; set; }
+        
+        [JsonPropertyName("token_creation_time")]
+        public DateTime CreatedOn { get; set; }
+        
+        [JsonPropertyName("token_expiration_time")]
+        public DateTime ExpiresOn { get; set; }
+        
+        [JsonPropertyName("scope")]
+        public IEnumerable<string>? Scope { get; set; }
+    }
+    
+    /// <summary>
+    /// Model for V1 of the API
+    /// </summary>
+    private class AccountTokenListModel
+    {
+        public AccountTokenListModel()
+        {
+            Tokens = new List<AccountTokenModel>();
+        }
+
+        public AccountTokenListModel(IEnumerable<SessionToken> sessionTokens)
+        {
+            Tokens = new List<AccountTokenModel>();
+            foreach (var sessionToken in sessionTokens)
+            {
+                Tokens.Add(new AccountTokenModel()
+                {
+                    CreatedOn = sessionToken.CreatedAt,
+                    ExpiresOn = sessionToken.Expires,
+                    Id = sessionToken.Id,
+                    RefreshToken = sessionToken.RefreshToken,
+                    Token = sessionToken.Id,
+                    TokenId = sessionToken.Id,
+                    Scope = new []
+                    {
+                        sessionToken.Scope.ToScopeString()
+                    }
+                });
+            }
+        }
+        
+        [JsonPropertyName("tokens")]
+        public List<AccountTokenModel> Tokens { get; set; }
     }
     
     /// <summary>
     /// Delete an account's token
     /// </summary>
-    [HttpDelete("{accountId:guid}/tokens/{token:guid}")]
+    [HttpDelete("{accountReference}/tokens/{token:guid}")]
     [Authorise]
-    public async Task<IActionResult> DeleteAccountToken(Guid accountId, Guid token)
+    public async Task<IActionResult> DeleteAccountToken(string accountReference, Guid token)
     {
-        //TODO
-        throw new NotImplementedException();
+        var account = await _userService.FindUser(accountReference);
+        if (account is null)
+            throw new UserNotFoundApiException();
+        
+        RestrictToSelfOrAdmin(account.Id);
+        
+        await _sessionTokenService.RevokeAccountToken(account.Id, token);
+        
+        return Success();
     }
     
     /// <summary>
@@ -139,6 +240,9 @@ public sealed class AccountsController : V1ApiController
         }
     }
 
+    /// <summary>
+    /// Model for V1 of the API
+    /// </summary>
     public class EmailVerificationModel
     {
         [FromQuery(Name = "a")]

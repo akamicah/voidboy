@@ -56,6 +56,14 @@ public class EmailService : IEmailService
     }
 
     /// <summary>
+    /// Clear sent emails where send date is over 30 days ago
+    /// </summary>
+    public async Task ClearSentEmails()
+    {
+        await _emailQueueEntityRepository.ClearSentEmails(DateTime.Now.AddDays(-30));
+    }
+
+    /// <summary>
     /// Re-try the email 3 times before deleting
     /// </summary>
     private async Task ReQueueForRetry(QueuedEmail email)

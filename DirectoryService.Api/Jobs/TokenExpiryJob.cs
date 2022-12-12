@@ -18,7 +18,7 @@ public class TokenExpiryJob : IJob
     public async void Execute()
     {
         using var serviceScope = _serviceScopeFactory.CreateScope();
-        var tokenExpiryService = serviceScope.ServiceProvider.GetRequiredService<TokenExpiryService>();
+        var tokenExpiryService = serviceScope.ServiceProvider.GetRequiredService<SessionTokenService>();
         await tokenExpiryService.ExpireTokens();
     }
 }
