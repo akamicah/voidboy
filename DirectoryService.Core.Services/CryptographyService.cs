@@ -1,5 +1,3 @@
-using BCrypt.Net;
-
 namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global

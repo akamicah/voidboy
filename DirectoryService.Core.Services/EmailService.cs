@@ -102,7 +102,7 @@ public class EmailService : IEmailService
                 model = JsonConvert.DeserializeObject<EmailModel>(email.Model);
             
             var mail = _fluentEmail.To(user.Email, user.Username)
-                .Subject(model.Subject)
+                .Subject(model!.Subject)
                 .SetFrom(_config.Smtp.SenderEmail, _config.Smtp.SenderName)
                 .UsingTemplateFromFile(template, model, true);
             var response = await mail.SendAsync();

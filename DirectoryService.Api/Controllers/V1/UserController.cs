@@ -16,7 +16,6 @@ public sealed class UserController : V1ApiController
     {
         _userService = userService;
     }
-    
 
     /// <summary>
     /// Get requester owned places

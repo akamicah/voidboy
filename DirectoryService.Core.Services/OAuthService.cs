@@ -29,6 +29,9 @@ public sealed class OAuthService
         _configuration = ServicesConfigContainer.Config;
     }
     
+    /// <summary>
+    /// Handle Token Grant Request
+    /// </summary>
     public async Task<GrantedTokenDto> HandleGrantRequest(TokenGrantRequestDto request)
     {
         if(request.Username is null or "" || request.Password is null or "")
@@ -59,6 +62,9 @@ public sealed class OAuthService
         }
     }
 
+    /// <summary>
+    /// Request a session token from a username and password
+    /// </summary>
     private async Task<GrantedTokenDto> GrantTokenFromPassword(string username, string password, TokenScope scope)
     {
         var user = await _userService.AuthenticateUser(username, password);
@@ -97,6 +103,9 @@ public sealed class OAuthService
         return response;
     }
 
+    /// <summary>
+    /// Request new session token from refresh token
+    /// </summary>
     private async Task<GrantedTokenDto> GrantTokenFromRefreshToken(Guid refreshToken)
     {
         var refToken = await _sessionTokenRepository.FindByRefreshToken(refreshToken);
@@ -124,6 +133,7 @@ public sealed class OAuthService
             }
         };
         
+        //TODO Should we be deleting the old token?
         var token = await _sessionTokenRepository.Create(newSession);
         var response = new GrantedTokenDto()
         {

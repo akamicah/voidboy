@@ -12,15 +12,12 @@ public class SessionTokenService
 {
     private readonly IActivationTokenRepository _activationTokenRepository;
     private readonly ISessionTokenRepository _sessionTokenRepository;
-    private readonly ISessionProvider _sessionProvider;
 
     public SessionTokenService(IActivationTokenRepository activationTokenRepository,
-        ISessionTokenRepository sessionTokenRepository,
-        ISessionProvider sessionProvider)
+        ISessionTokenRepository sessionTokenRepository)
     {
         _activationTokenRepository = activationTokenRepository;
         _sessionTokenRepository = sessionTokenRepository;
-        _sessionProvider = sessionProvider;
     }
 
     /// <summary>
@@ -32,6 +29,9 @@ public class SessionTokenService
         await _sessionTokenRepository.ExpireTokens();
     }
 
+    /// <summary>
+    /// List all session tokens for account
+    /// </summary>
     public async Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid account, PaginatedRequest page)
     {
         page.Where.Add("accountId", account);

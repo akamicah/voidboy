@@ -12,7 +12,7 @@ public class PaginatedRequest
     public string? SearchOn { get; set; }
     public string? OrderBy { get; set; }
     public bool OrderAscending { get; set; }
-    public WhereCollection Where { get; set; } = new();
+    public WhereCollection Where { get; } = new();
 
     public PaginatedRequest()
     {

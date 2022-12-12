@@ -31,6 +31,9 @@ public class UserActivationService
         _userRepository = userRepository;
     }
 
+    /// <summary>
+    /// Process the activation token request
+    /// </summary>
     public async Task ReceiveUserActivationResponse(Guid accountId, Guid verificationToken)
     {
         var token = await _activationTokenRepository.Retrieve(verificationToken);
@@ -49,6 +52,9 @@ public class UserActivationService
         await _activationTokenRepository.Delete(token.Id);
     }
     
+    /// <summary>
+    /// Create activation token and send an activation email
+    /// </summary>
     public async Task SendUserActivationRequest(User user)
     {
         if (_configuration.Registration.RequireEmailVerification)

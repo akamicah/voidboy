@@ -70,11 +70,12 @@ public sealed class UserService
     /// </summary>
     public async Task<PaginatedResponse<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
     {
-        if(!page.AsAdmin)
-        {
+        if(!page.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
             page.Where.Add("connection", true);
-        }
-
+        
+        if(page.Filter != null && page.Filter.Contains("friends"))
+            page.Where.Add("friend", true);
+        
         var requestedBy = await _sessionProvider.GetRequesterSession();
         var users = await _userRepository.ListRelativeUsers(requestedBy!.AccountId, page, true);
         var result = new List<UserSearchResultDto>();
@@ -152,7 +153,8 @@ public sealed class UserService
             AuthVersion = auth.Version,
             AuthHash = auth.Hash,
             Role = role,
-            CreatorIp = registerUserDto.OriginIp?.ToString() ?? IPAddress.Any.ToString()
+            CreatorIp = registerUserDto.OriginIp?.ToString() ?? IPAddress.Any.ToString(),
+            State = AccountState.Normal
         };
 
         var createdUser = await _userRepository.Create(newUser);
