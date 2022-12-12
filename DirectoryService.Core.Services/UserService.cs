@@ -64,6 +64,15 @@ public sealed class UserService
         
         var auth = CryptographyService.GenerateAuth(registerUserDto.Password!);
 
+        var role = UserRole.User;
+
+        if (_configuration.Registration.DefaultAdminAccount != "" &&
+            registerUserDto.Username == _configuration.Registration.DefaultAdminAccount)
+        {
+            _logger.LogWarning("Default administrator account being registered: {username}", registerUserDto.Username);
+            role = UserRole.Admin;
+        }
+
         var newUser = new User()
         {
             Username = registerUserDto.Username!,
@@ -71,7 +80,7 @@ public sealed class UserService
             Activated = !_configuration.Registration.RequireEmailVerification,
             AuthVersion = auth.Version,
             AuthHash = auth.Hash,
-            Role = UserRole.User,
+            Role = role,
             CreatorIp = registerUserDto.OriginIp?.ToString() ?? IPAddress.Any.ToString()
         };
 

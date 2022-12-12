@@ -38,8 +38,8 @@
     "MaxUsernameLength": 32,
     "RequireEmailVerification": true,
     "EmailVerificationTimeoutMinutes": 1440,
-    "EmailVerificationSuccessRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailSuccess.html",
-    "EmailVerificationFailRedirect": "DIRECTORY_SERVER_URL/static/verificationEmailFailure.html?r=FAILURE_REASON",
+    "EmailVerificationSuccessRedirect": "http://127.0.0.1:9400/static/email-verified",
+    "EmailVerificationFailRedirect": "http://127.0.0.1:9400/static/verification-fail",
     "DefaultAdminAccount": ""
   },
   "Tokens": {

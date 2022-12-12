@@ -3,6 +3,7 @@ using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -12,11 +13,13 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class AccountsController : V1ApiController
 {
-    private UserActivationService _userActivationService;
+    private readonly UserActivationService _userActivationService;
+    private readonly ServiceConfiguration _configuration;
 
     public AccountsController(UserActivationService userActivationService)
     {
         _userActivationService = userActivationService;
+        _configuration = ServicesConfigContainer.Config;
     }
     
     /// <summary>
@@ -120,15 +123,20 @@ public sealed class AccountsController : V1ApiController
     public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
     {
         if (!Guid.TryParse(verification.AccountId, out var accountId))
-            return Failure();
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
         
         if (!Guid.TryParse(verification.VerificationToken, out var verificationToken))
-            return Failure();
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
 
-        await _userActivationService.ReceiveUserActivationResponse(accountId, verificationToken);
-
-        //TODO Redirect to configured route
-        return new RedirectResult("https://overte.org");
+        try
+        {
+            await _userActivationService.ReceiveUserActivationResponse(accountId, verificationToken);
+            return new RedirectResult(_configuration.Registration.EmailVerificationSuccessRedirect!);
+        }
+        catch (Exception e)
+        {
+            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+        }
     }
 
     public class EmailVerificationModel
