@@ -7,7 +7,7 @@ using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionTokenRepository
 {
     public SessionTokenRepository(DbContext dbContext) : base(dbContext)
@@ -18,7 +18,7 @@ public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionToke
     /// <summary>
     /// Create a new session token and store it in the db
     /// </summary>
-    public async Task<SessionToken?> Create(SessionToken entity)
+    public async Task<SessionToken> Create(SessionToken entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(

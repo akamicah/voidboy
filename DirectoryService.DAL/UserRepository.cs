@@ -2,22 +2,23 @@ using Dapper;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.DAL.Infrastructure;
+using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
     public UserRepository(DbContext dbContext) : base(dbContext)
     {
         TableName = "users";
     }
-    
+
     /// <summary>
     /// Store a new User entity in the database
     /// </summary>
-    public async Task<User?> Create(User entity)
+    public async Task<User> Create(User entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
@@ -65,7 +66,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return await Retrieve(entity.Id);
     }
 
-  
+
     public async Task<User?> FindByUsername(string username)
     {
         using var con = await DbContext.CreateConnectionAsync();
@@ -75,7 +76,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             {
                 username
             });
-        
+
         return entity;
     }
 
@@ -88,8 +89,23 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             {
                 emailAddress
             });
-        
+
         return entity;
     }
-    
+
+    public async Task<PaginatedResponse<User>> ListRelativeUsers(Guid relativeUser, PaginatedRequest page, bool includeSelf)
+    {
+        const string sqlTemplate = $@"SELECT * FROM 
+             (SELECT u.*, CASE WHEN u.id = @selfId AND @includeSelf = TRUE THEN TRUE 
+            ELSE CASE WHEN connection.isConnection = TRUE THEN TRUE ELSE FALSE END END connection
+            FROM users u LEFT JOIN (SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END AS isConnection,
+            uc.userAId FROM userConnections uc WHERE userBId = @selfId GROUP BY userAId)
+            AS connection ON connection.userAId = u.id) AS t ";
+
+        var dynamicParameters = new DynamicParameters();
+        dynamicParameters.Add("selfId", relativeUser);
+        dynamicParameters.Add("includeSelf", includeSelf);
+
+        return await QueryDynamic(sqlTemplate, "t", page, dynamicParameters);
+    }
 }

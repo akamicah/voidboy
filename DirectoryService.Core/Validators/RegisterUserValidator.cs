@@ -7,7 +7,7 @@ namespace DirectoryService.Core.Validators;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 
-[ScopedRegistration]
+[ScopedDependency]
 public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
 {
     public RegisterUserValidator()

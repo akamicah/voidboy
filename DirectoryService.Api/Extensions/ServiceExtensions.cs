@@ -40,9 +40,9 @@ public static class ServiceExtensions
     /// <param name="services"></param>
     private static void RegisterDiAttributedServices(IEnumerable<Assembly> assemblies, IServiceCollection services)
     {
-        var scopedRegistration = typeof(ScopedRegistrationAttribute);
-        var singletonRegistration = typeof(SingletonRegistrationAttribute);
-        var transientRegistration = typeof(TransientRegistrationAttribute);
+        var scopedRegistration = typeof(ScopedDependencyAttribute);
+        var singletonRegistration = typeof(SingletonDependencyAttribute);
+        var transientRegistration = typeof(TransientDependencyAttribute);
 
         var foundTypes = assemblies
             .SelectMany(s => s.GetTypes())

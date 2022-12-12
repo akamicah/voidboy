@@ -109,9 +109,10 @@ public abstract class V1ApiController : ControllerBase
                 paginationFilter.Page = page;
         }
         
-        if (!queryParams.ContainsKey("asdmin")) return paginationFilter;
+        if (!queryParams.ContainsKey("asadmin")) 
+            return paginationFilter;
 
-        if (bool.TryParse(queryParams["asdmin"], out var asAdmin))
+        if (bool.TryParse(queryParams["asadmin"], out var asAdmin))
             paginationFilter.AsAdmin = asAdmin;
         
         return paginationFilter;

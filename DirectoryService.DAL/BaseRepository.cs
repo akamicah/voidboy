@@ -6,7 +6,7 @@ namespace DirectoryService.DAL;
 
 public class BaseRepository<T>
 {
-    protected string? TableName { get; set; }
+    protected string? TableName { get; init; }
     protected readonly DbContext DbContext;
 
     protected BaseRepository(DbContext db)
@@ -14,13 +14,14 @@ public class BaseRepository<T>
         DbContext = db;
     }
 
-    protected async Task<PaginatedResponse<T>> QueryDynamic(string sqlTemplate, string tableName, PaginatedRequest page)
+    protected async Task<PaginatedResponse<T>> QueryDynamic(string sqlTemplate, string tableName, PaginatedRequest page, DynamicParameters? dynamicParameters = null)
     {
         using var con = await DbContext.CreateConnectionAsync();
 
         sqlTemplate += " WHERE 1=1";
         
-        var dynamicParameters = new DynamicParameters();
+        dynamicParameters ??= new DynamicParameters();
+        
         var sqlWhere = "";
         var paramIx = 1;
         foreach (var (col, value) in page.Where.ToDictionary())
@@ -73,12 +74,12 @@ public class BaseRepository<T>
         };
     }
 
-    public async Task<PaginatedResponse<T>> List(PaginatedRequest request)
+    public virtual async Task<PaginatedResponse<T>> List(PaginatedRequest request)
     {
         return await QueryDynamic($@"SELECT * FROM {TableName} t", "t", request);
     }
 
-    public async Task<T?> Retrieve(Guid id)
+    public virtual async Task<T?> Retrieve(Guid id)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var sql = $@"SELECT * FROM {TableName} WHERE id = @id";
@@ -86,7 +87,7 @@ public class BaseRepository<T>
         return entity;
     }
 
-    public async Task Delete(Guid entityId)
+    public virtual async Task Delete(Guid entityId)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var sql = $@"DELETE FROM {TableName} WHERE id = @id";
@@ -94,7 +95,7 @@ public class BaseRepository<T>
             sql, new { Id = entityId });
     }
 
-    public async Task Delete(IEnumerable<Guid> entityIds)
+    public virtual async Task Delete(IEnumerable<Guid> entityIds)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var sql = $@"DELETE FROM {TableName} WHERE id = @id";

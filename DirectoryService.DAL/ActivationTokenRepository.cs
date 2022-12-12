@@ -6,7 +6,7 @@ using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class ActivationTokenRepository : BaseRepository<ActivationToken>, IActivationTokenRepository
 {
     public ActivationTokenRepository(DbContext dbContext) : base(dbContext)
@@ -14,7 +14,7 @@ public class ActivationTokenRepository : BaseRepository<ActivationToken>, IActiv
         TableName = "activationTokens";
     }
 
-    public async Task<ActivationToken?> Create(ActivationToken entity)
+    public async Task<ActivationToken> Create(ActivationToken entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(

@@ -16,12 +16,13 @@ namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 
-[ScopedRegistration]
+[ScopedDependency]
 public sealed class UserService
 {
     private readonly ILogger<UserService> _logger;
     private readonly RegisterUserValidator _registerUserValidator;
     private readonly IUserRepository _userRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly ServiceConfiguration _configuration;
     private readonly ISessionProvider _sessionProvider;
     private readonly UserActivationService _userActivationService;
@@ -30,7 +31,8 @@ public sealed class UserService
         RegisterUserValidator registerUserValidator,
         IUserRepository userRepository,
         ISessionProvider sessionProvider,
-        UserActivationService userActivationService)
+        UserActivationService userActivationService,
+        IUserProfileRepository userProfileRepository)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
@@ -38,6 +40,7 @@ public sealed class UserService
         _configuration = ServicesConfigContainer.Config;
         _sessionProvider = sessionProvider;
         _userActivationService = userActivationService;
+        _userProfileRepository = userProfileRepository;
     }
 
     public async Task<User?> GetUserFromId(Guid id)
@@ -59,15 +62,55 @@ public sealed class UserService
         return await _userRepository.FindByUsername(needle.ToLower());
     }
     
-    public async Task<PaginatedResponse<User>> ListUsers(PaginatedRequest page)
+    public async Task<PaginatedResponse<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
     {
-        var requester = await _sessionProvider.GetRequesterSession();
-        if (page.AsAdmin && requester!.Role != UserRole.Admin)
-            throw new UnauthorisedApiException();
+        if(!page.AsAdmin)
+        {
+            page.Where.Add("connection", true);
+        }
 
-        // TODO: Figure out what we're returning and make sure it's not excessive information
-        
-        throw new NotImplementedException();
+        var requestedBy = await _sessionProvider.GetRequesterSession();
+        var users = await _userRepository.ListRelativeUsers(requestedBy!.AccountId, page, true);
+        var result = new List<UserSearchResultDto>();
+        foreach (var user in users.Data!)
+        {
+            var profile = await _userProfileRepository.Retrieve(user.Id);
+            result.Add(new UserSearchResultDto()
+            {
+                Username = user.Username,
+                AccountId = user.Id,
+                Images = new UserImagesDto()
+                {
+                    Hero = profile?.HeroImageUrl ?? "",
+                    Thumbnail = profile?.ThumbnailImageUrl ?? "",
+                    Tiny = profile?.TinyImageUrl ?? ""
+                },
+                Location = new LocationReferenceDto()
+                {
+                    NodeId = Guid.Empty,
+                    Online = false,
+                    Path = "",
+                    Root = new RootLocationReferenceDto()
+                    {
+                        Domain = new DomainReferenceDto()
+                        {
+                            Id = Guid.Empty,
+                            IceServerAddress = "",
+                            Name = "",
+                            NetworkAddress = "",
+                            NetworkPort = 0
+                        }
+                    }
+                }
+            });
+        }
+
+        return new PaginatedResponse<UserSearchResultDto>()
+        {
+            Data = result,
+            Page = users.Page,
+            PageSize = users.PageSize
+        };
     }
 
     public async Task<UserRegisteredDto> RegisterUser(RegisterUserDto registerUserDto)
@@ -104,6 +147,14 @@ public sealed class UserService
         };
 
         var response = await _userRepository.Create(newUser);
+
+        await _userProfileRepository.Create(new UserProfile()
+        {
+            UserId = response.Id,
+            HeroImageUrl = "",
+            ThumbnailImageUrl = "",
+            TinyImageUrl = ""
+        });
 
         _logger.LogInformation("New user registration. Username: {username}, Email: {email}",
             registerUserDto.Username, registerUserDto.Email!.MaskEmail());

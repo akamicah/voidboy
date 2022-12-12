@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace DirectoryService.Core.Services;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class EmailService : IEmailService
 {
     private readonly ILogger<EmailService> _logger;

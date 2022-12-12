@@ -11,7 +11,7 @@ namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 
-[ScopedRegistration]
+[ScopedDependency]
 public sealed class OAuthService
 {
     private readonly ILogger<OAuthService> _logger;

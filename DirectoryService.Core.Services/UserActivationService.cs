@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Core.Services;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class UserActivationService
 {
     private readonly ILogger<UserActivationService> _logger;

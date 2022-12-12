@@ -6,7 +6,7 @@ using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class EmailQueueEntityRepository : BaseRepository<QueuedEmail>, IEmailQueueEntityRepository
 {
     public EmailQueueEntityRepository(DbContext db) : base(db)
@@ -14,7 +14,7 @@ public class EmailQueueEntityRepository : BaseRepository<QueuedEmail>, IEmailQue
         TableName = "emailQueue";
     }
     
-    public async Task<QueuedEmail?> Create(QueuedEmail entity)
+    public async Task<QueuedEmail> Create(QueuedEmail entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(

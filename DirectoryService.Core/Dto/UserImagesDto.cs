@@ -1,6 +1,6 @@
 namespace DirectoryService.Core.Dto;
 
-public class AccountImagesDto
+public class UserImagesDto
 {
     public string Hero { get; set; }
     public string Thumbnail { get; set; }

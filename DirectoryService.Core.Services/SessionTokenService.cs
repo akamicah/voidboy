@@ -7,7 +7,7 @@ using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.Core.Services;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class SessionTokenService
 {
     private readonly IActivationTokenRepository _activationTokenRepository;

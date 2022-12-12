@@ -3,6 +3,7 @@ using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
+using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -24,10 +25,17 @@ public sealed class UsersController : V1ApiController
     public async Task<IActionResult> GetUsers()
     {
         var page = PaginatedRequest();
+        var result = await _userService.ListRelativeUsers(page);
+        return Success(new UserListModel(result));
+    }
 
-        var response = await _userService.ListUsers(page);
-        
-        return Success(response);
+    private class UserListModel
+    {
+        public UserListModel(PaginatedResponse<UserSearchResultDto> result)
+        {
+            Users = result.Data!;
+        }
+        public IEnumerable<UserSearchResultDto> Users { get; set; }
     }
 
     /// <summary>

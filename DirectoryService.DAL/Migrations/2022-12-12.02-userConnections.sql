@@ -1,0 +1,15 @@
+CREATE TABLE userConnections
+(
+    id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID() NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt TIMESTAMP DEFAULT NULL,
+    userAId UUID REFERENCES users(id) ON DELETE CASCADE,
+    userBId UUID REFERENCES users(id) ON DELETE CASCADE,
+    friend BOOLEAN DEFAULT FALSE
+);
+
+CREATE TRIGGER userProfiles_updated_at
+    BEFORE UPDATE
+    ON userConnections
+    FOR EACH ROW
+    EXECUTE PROCEDURE updated_at_timestamp();
