@@ -46,7 +46,10 @@ public sealed class UserService
         _userGroupRepository = userGroupRepository;
     }
 
-    public async Task<User?> GetUserFromId(Guid id)
+    /// <summary>
+    /// Get user by Id
+    /// </summary>
+    public async Task<User?> FindById(Guid id)
     {
         return await _userRepository.Retrieve(id);
     }
@@ -68,7 +71,7 @@ public sealed class UserService
     /// <summary>
     /// Fetch a list of users relative to the requester session
     /// </summary>
-    public async Task<PaginatedResponse<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
+    public async Task<PaginatedResult<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
     {
         if(!page.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
             page.Where.Add("connection", true);
@@ -112,12 +115,7 @@ public sealed class UserService
             });
         }
 
-        return new PaginatedResponse<UserSearchResultDto>()
-        {
-            Data = result,
-            Page = users.Page,
-            PageSize = users.PageSize
-        };
+        return new PaginatedResult<UserSearchResultDto>(result, users);
     }
 
     /// <summary>

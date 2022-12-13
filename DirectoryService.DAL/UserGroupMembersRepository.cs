@@ -15,7 +15,7 @@ public class UserGroupMembersRepository : BaseRepository<User>, IUserGroupMember
         TableName = "userGroupMembers";
     }
 
-    public async Task<PaginatedResponse<User>> List(Guid groupId, PaginatedRequest page)
+    public async Task<PaginatedResult<User>> List(Guid groupId, PaginatedRequest page)
     {
         const string sqlTemplate = @"SELECT * FROM (
             SELECT u.* FROM users u JOIN userGroupMembers ugm ON u.id = ugm.userId
@@ -65,7 +65,7 @@ public class UserGroupMembersRepository : BaseRepository<User>, IUserGroupMember
     }
 
     [Obsolete("Use List(Guid, PaginatedRequest) instead")]
-    public override Task<PaginatedResponse<User>> List(PaginatedRequest request)
+    public override Task<PaginatedResult<User>> List(PaginatedRequest request)
     {
         throw new NotImplementedException();
     }

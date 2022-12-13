@@ -14,14 +14,15 @@ public class BaseRepository<T>
         DbContext = db;
     }
 
-    protected async Task<PaginatedResponse<T>> QueryDynamic(string sqlTemplate, string tableName, PaginatedRequest page, DynamicParameters? dynamicParameters = null)
+    protected async Task<PaginatedResult<T>> QueryDynamic(string sqlTemplate, string tableName, PaginatedRequest page,
+        DynamicParameters? dynamicParameters = null)
     {
         using var con = await DbContext.CreateConnectionAsync();
 
         sqlTemplate += " WHERE 1=1";
-        
+
         dynamicParameters ??= new DynamicParameters();
-        
+
         var sqlWhere = "";
         var paramIx = 1;
         foreach (var (col, value) in page.Where.ToDictionary())
@@ -59,22 +60,26 @@ public class BaseRepository<T>
             if (!page.OrderAscending)
                 sqlWhere += $@" DESC";
         }
-        
-        sqlWhere += " OFFSET @_pOffset LIMIT @_pLimit ";
-        dynamicParameters.Add("_pOffset", (page.Page - 1) * page.PageSize );
-        dynamicParameters.Add("_pLimit", page.PageSize );
 
-            sqlTemplate += sqlWhere;
-        
-        var result = await con.QueryAsync<T>(sqlTemplate, dynamicParameters);
+        dynamicParameters.Add("_pOffset", (page.Page - 1) * page.PageSize);
+        dynamicParameters.Add("_pLimit", page.PageSize);
 
-        return new PaginatedResponse<T>()
+        var resultTemplate = sqlTemplate + sqlWhere + " OFFSET @_pOffset LIMIT @_pLimit ";
+        var countTemplate = "SELECT COUNT(*) FROM (" + sqlTemplate + sqlWhere + ") resultTotal;";
+        var result = await con.QueryAsync<T>(resultTemplate, dynamicParameters);
+        var total = await con.QuerySingleAsync<int>(countTemplate, dynamicParameters);
+
+        return new PaginatedResult<T>()
         {
+            Page = page.Page,
+            PageSize = page.PageSize,
+            TotalPages = total == 0 ? 0 : (int)Math.Round((double)(total / page.PageSize)) + 1,
+            Total = total,
             Data = result
         };
     }
 
-    public virtual async Task<PaginatedResponse<T>> List(PaginatedRequest request)
+    public virtual async Task<PaginatedResult<T>> List(PaginatedRequest request)
     {
         return await QueryDynamic($@"SELECT * FROM {TableName} t", "t", request);
     }

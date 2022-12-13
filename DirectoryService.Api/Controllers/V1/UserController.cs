@@ -108,7 +108,7 @@ public sealed class UserController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         page.Where.Add("connection", true);
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new UserListModel(result));;
+        return Success(new UserListModel(result), result);
     }
 
     /// <summary>
@@ -148,7 +148,7 @@ public sealed class UserController : V1ApiController
     
     private class UserFriendsModel
     {
-        public UserFriendsModel(PaginatedResponse<UserSearchResultDto> result)
+        public UserFriendsModel(PaginatedResult<UserSearchResultDto> result)
         {
             Friends = result.Data?.Select(x => x.Username!).ToList() ?? new List<string>();
         }

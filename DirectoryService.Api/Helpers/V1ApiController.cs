@@ -25,6 +25,19 @@ public abstract class V1ApiController : ControllerBase
             Data = result
         });
     }
+    
+    protected static JsonResult Success(object result, PaginatedResult page)
+    {
+        return new JsonResult(new
+        {
+            Status = "success",
+            Data = result,
+            CurrentPage = page.Page,
+            PerPage = page.PageSize,
+            TotalPages = page.TotalPages,
+            TotalEntries = page.Total
+        });
+    }
 
     protected static JsonResult Failure()
     {

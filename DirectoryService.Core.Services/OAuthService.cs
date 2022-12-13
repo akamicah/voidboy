@@ -113,7 +113,7 @@ public sealed class OAuthService
             throw new InvalidTokenApiException();
 
         var userId = refToken.AccountId;
-        var user = await _userService.GetUserFromId(userId);
+        var user = await _userService.FindById(userId);
         
         if(user == null)
             throw new InvalidTokenApiException();

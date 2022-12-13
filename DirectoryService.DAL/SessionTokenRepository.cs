@@ -59,7 +59,7 @@ public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionToke
         await con.ExecuteAsync(@"DELETE FROM sessionTokens WHERE expires < CURRENT_TIMESTAMP");
     }
     
-    public async Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page)
+    public async Task<PaginatedResult<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page)
     {
         using var con = await DbContext.CreateConnectionAsync();
         var result = await con.QueryAsync<SessionToken>(
@@ -71,7 +71,7 @@ public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionToke
                 offset = (page.Page - 1) * page.PageSize
             });
 
-        return new PaginatedResponse<SessionToken>()
+        return new PaginatedResult<SessionToken>()
         {
             Data = result,
             Page = page.Page,

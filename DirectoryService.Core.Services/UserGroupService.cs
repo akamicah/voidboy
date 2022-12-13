@@ -70,7 +70,7 @@ public class UserGroupService
     /// <summary>
     /// Fetch a list of user group members
     /// </summary>
-    public async Task<PaginatedResponse<User>> GetGroupMembers(Guid userGroupId, PaginatedRequest page)
+    public async Task<PaginatedResult<User>> GetGroupMembers(Guid userGroupId, PaginatedRequest page)
     {
         var result = await _userGroupMembersRepository.List(userGroupId, page);
         return result;

@@ -97,7 +97,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return entity;
     }
 
-    public async Task<PaginatedResponse<User>> ListRelativeUsers(Guid relativeUser, PaginatedRequest page, bool includeSelf)
+    public async Task<PaginatedResult<User>> ListRelativeUsers(Guid relativeUser, PaginatedRequest page, bool includeSelf)
     {
         const string sqlTemplate = $@"SELECT * FROM (SELECT u.*, CASE WHEN u.id = @selfId THEN TRUE ELSE FALSE END AS self,
                       COALESCE(connections.isConnection, FALSE) AS connection,

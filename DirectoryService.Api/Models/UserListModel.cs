@@ -5,7 +5,7 @@ namespace DirectoryService.Api.Models;
 
 public class UserListModel
 {
-    public UserListModel(PaginatedResponse<UserSearchResultDto> result)
+    public UserListModel(PaginatedResult<UserSearchResultDto> result)
     {
         Users = result.Data!;
     }

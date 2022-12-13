@@ -12,3 +12,8 @@ public class UserSearchResultDto
     public UserImagesDto? Images { get; set; }
     public LocationReferenceDto? Location { get; set; }
 }
+
+public class VerboseUserSearchResultDto : UserSearchResultDto
+{
+    public object? ProfileDetail { get; set; }
+}

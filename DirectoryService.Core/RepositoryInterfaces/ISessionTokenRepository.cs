@@ -5,7 +5,7 @@ namespace DirectoryService.Core.RepositoryInterfaces;
 
 public interface ISessionTokenRepository : IBaseRepository<SessionToken>
 {
-    public Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page);
+    public Task<PaginatedResult<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page);
     public Task<SessionToken?> FindByRefreshToken(Guid refreshToken);
     public Task ExpireTokens();
 }

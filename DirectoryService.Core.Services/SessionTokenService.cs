@@ -32,7 +32,7 @@ public class SessionTokenService
     /// <summary>
     /// List all session tokens for account
     /// </summary>
-    public async Task<PaginatedResponse<SessionToken>> ListAccountTokens(Guid account, PaginatedRequest page)
+    public async Task<PaginatedResult<SessionToken>> ListAccountTokens(Guid account, PaginatedRequest page)
     {
         page.Where.Add("accountId", account);
         var result = await _sessionTokenRepository.List(page);
