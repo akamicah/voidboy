@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Core.Services;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class UserActivationService
 {
     private readonly ILogger<UserActivationService> _logger;
@@ -31,6 +31,9 @@ public class UserActivationService
         _userRepository = userRepository;
     }
 
+    /// <summary>
+    /// Process the activation token request
+    /// </summary>
     public async Task ReceiveUserActivationResponse(Guid accountId, Guid verificationToken)
     {
         var token = await _activationTokenRepository.Retrieve(verificationToken);
@@ -46,9 +49,12 @@ public class UserActivationService
         
         user.Activated = true;
         await _userRepository.Update(user);
-        await _activationTokenRepository.Delete(token);
+        await _activationTokenRepository.Delete(token.Id);
     }
     
+    /// <summary>
+    /// Create activation token and send an activation email
+    /// </summary>
     public async Task SendUserActivationRequest(User user)
     {
         if (_configuration.Registration.RequireEmailVerification)

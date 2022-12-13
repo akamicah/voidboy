@@ -4,4 +4,4 @@ namespace DirectoryService.Shared.Attributes;
 /// Register a class as a Scoped service for dependency injection
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class ScopedRegistrationAttribute : Attribute { }
+public sealed class ScopedDependencyAttribute : Attribute { }

@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace DirectoryService.Core.Services;
 
-[ScopedRegistration]
+[ScopedDependency]
 public class EmailService : IEmailService
 {
     private readonly ILogger<EmailService> _logger;
@@ -56,6 +56,14 @@ public class EmailService : IEmailService
     }
 
     /// <summary>
+    /// Clear sent emails where send date is over 30 days ago
+    /// </summary>
+    public async Task ClearSentEmails()
+    {
+        await _emailQueueEntityRepository.ClearSentEmails(DateTime.Now.AddDays(-30));
+    }
+
+    /// <summary>
     /// Re-try the email 3 times before deleting
     /// </summary>
     private async Task ReQueueForRetry(QueuedEmail email)
@@ -63,7 +71,7 @@ public class EmailService : IEmailService
         if (email.Attempt == 3)
         {
             _logger.LogInformation("Email {id} failed to send 3 times. Deleting.", email.Id);
-            await _emailQueueEntityRepository.Delete(email);
+            await _emailQueueEntityRepository.Delete(email.Id);
             return;
         }
         _logger.LogInformation("Re-queueing email {id} for sending in 30 seconds", email.Id);
@@ -94,7 +102,7 @@ public class EmailService : IEmailService
                 model = JsonConvert.DeserializeObject<EmailModel>(email.Model);
             
             var mail = _fluentEmail.To(user.Email, user.Username)
-                .Subject(model.Subject)
+                .Subject(model!.Subject)
                 .SetFrom(_config.Smtp.SenderEmail, _config.Smtp.SenderName)
                 .UsingTemplateFromFile(template, model, true);
             var response = await mail.SendAsync();

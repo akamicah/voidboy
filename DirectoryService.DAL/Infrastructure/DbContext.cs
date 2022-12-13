@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace DirectoryService.DAL.Infrastructure;
 
-[SingletonRegistration]
+[SingletonDependency]
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DbContext
 {

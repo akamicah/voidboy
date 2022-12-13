@@ -4,4 +4,4 @@ namespace DirectoryService.Shared.Attributes;
 /// Register a class as a Transient service for dependency injection
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class TransientRegistrationAttribute : Attribute { }
+public sealed class TransientDependencyAttribute : Attribute { }

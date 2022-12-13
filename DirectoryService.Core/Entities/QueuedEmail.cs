@@ -2,7 +2,7 @@ using DirectoryService.Core.Dto;
 
 namespace DirectoryService.Core.Entities;
 
-public class QueuedEmail : GuidIdentifiedEntity
+public class QueuedEmail : BaseEntity
 {
     public EmailType Type { get; set; }
     public Guid AccountId { get; set; }

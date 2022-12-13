@@ -12,7 +12,11 @@
     "Nickname": "Overte",
     "ServerUrl": "http://127.0.0.1:9400",
     "IceServerUrl": "localhost",
-    "DashboardUrl": "localhost"
+    "DashboardUrl": "localhost",
+    "MetaverseVersion": {
+      "Version": "0.1 alpha",
+      "Codename": "voidboy"
+    }
   },
   "Db" : {
     "ConnectionString": "Server=127.0.0.1;Port=5432;Database=directory_service;User Id=postgres;Password=postgres"

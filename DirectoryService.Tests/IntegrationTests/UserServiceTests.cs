@@ -50,14 +50,14 @@ public class UserServiceTests : TestBase
     {
         var userService = _factory!.Services.GetRequiredService<UserService>();
 
-        var user = await userService.AuthenticateUser("test", "test123!");
+        var user = await userService.AuthenticateUser("testadmin", "password");
         
         Assert.Multiple(() =>
         {
             Assert.That(user.Id, Is.Not.Empty);
-            Assert.That(user.Username!, Is.EqualTo("test"));
+            Assert.That(user.Username!, Is.EqualTo("testadmin"));
             Assert.That(user.IdentityProvider!, Is.EqualTo(IdentityProvider.Local));
-            Assert.That(user.Email!, Is.EqualTo("test@test.com"));
+            Assert.That(user.Email!, Is.EqualTo("admin@test.com"));
         });
     }
 }

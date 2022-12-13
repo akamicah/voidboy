@@ -2,7 +2,7 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Core.Entities;
 
-public class SessionToken : GuidIdentifiedEntity
+public class SessionToken : BaseEntity
 {
     public Guid RefreshToken { get; set; }
     public Guid AccountId { get; set; }

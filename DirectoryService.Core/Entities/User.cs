@@ -2,7 +2,7 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Core.Entities;
 
-public class User : GuidIdentifiedEntity
+public class User : BaseEntity
 {
     public IdentityProvider IdentityProvider;
     public AccountState State;
@@ -14,4 +14,9 @@ public class User : GuidIdentifiedEntity
     public UserRole Role;
     public string? CreatorIp;
     public string? Language;
+    public Guid ConnectionGroup;
+    public Guid FriendsGroup;
+    public bool? Self { get; set; }
+    public bool? Connection { get; set; }
+    public bool? Friend { get; set; }
 }

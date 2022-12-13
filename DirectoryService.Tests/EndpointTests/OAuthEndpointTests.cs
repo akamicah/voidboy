@@ -19,8 +19,8 @@ public class OAuthEndpointTests : TestBase
         var requestData = new
         {
             grant_type = "password",
-            username = "test",
-            password = "test123!"
+            username = "user",
+            password = "password"
         };
         
         var response = await _client.PostAsJsonAsync("oauth/token", requestData);
@@ -32,7 +32,7 @@ public class OAuthEndpointTests : TestBase
         {
             Assert.That(responseBody!.Scope, Is.EqualTo("owner"));
             Assert.That(responseBody!.TokenType, Is.EqualTo("Bearer"));
-            Assert.That(responseBody!.AccountName, Is.EqualTo("test"));
+            Assert.That(responseBody!.AccountName, Is.EqualTo("user"));
             Assert.That(responseBody!.AccountRoles, Is.EqualTo(new List<string>() { "user" }));
         });
     }

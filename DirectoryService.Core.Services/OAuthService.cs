@@ -11,7 +11,7 @@ namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 
-[ScopedRegistration]
+[ScopedDependency]
 public sealed class OAuthService
 {
     private readonly ILogger<OAuthService> _logger;
@@ -29,6 +29,9 @@ public sealed class OAuthService
         _configuration = ServicesConfigContainer.Config;
     }
     
+    /// <summary>
+    /// Handle Token Grant Request
+    /// </summary>
     public async Task<GrantedTokenDto> HandleGrantRequest(TokenGrantRequestDto request)
     {
         if(request.Username is null or "" || request.Password is null or "")
@@ -59,6 +62,9 @@ public sealed class OAuthService
         }
     }
 
+    /// <summary>
+    /// Request a session token from a username and password
+    /// </summary>
     private async Task<GrantedTokenDto> GrantTokenFromPassword(string username, string password, TokenScope scope)
     {
         var user = await _userService.AuthenticateUser(username, password);
@@ -97,6 +103,9 @@ public sealed class OAuthService
         return response;
     }
 
+    /// <summary>
+    /// Request new session token from refresh token
+    /// </summary>
     private async Task<GrantedTokenDto> GrantTokenFromRefreshToken(Guid refreshToken)
     {
         var refToken = await _sessionTokenRepository.FindByRefreshToken(refreshToken);
@@ -104,7 +113,7 @@ public sealed class OAuthService
             throw new InvalidTokenApiException();
 
         var userId = refToken.AccountId;
-        var user = await _userService.GetUserFromId(userId);
+        var user = await _userService.FindById(userId);
         
         if(user == null)
             throw new InvalidTokenApiException();
@@ -124,6 +133,7 @@ public sealed class OAuthService
             }
         };
         
+        //TODO Should we be deleting the old token?
         var token = await _sessionTokenRepository.Create(newSession);
         var response = new GrantedTokenDto()
         {

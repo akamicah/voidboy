@@ -4,4 +4,4 @@ namespace DirectoryService.Shared.Attributes;
 /// Register a class as a Singleton service for dependency injection
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class SingletonRegistrationAttribute : Attribute { }
+public sealed class SingletonDependencyAttribute : Attribute { }
