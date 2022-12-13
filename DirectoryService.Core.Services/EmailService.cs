@@ -4,6 +4,7 @@ using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Config;
+using DirectoryService.Shared.Extensions;
 using FluentEmail.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -70,12 +71,11 @@ public class EmailService : IEmailService
     {
         if (email.Attempt == 3)
         {
-            _logger.LogInformation("Email {id} failed to send 3 times. Deleting.", email.Id);
+            _logger.LogWarning("Email {id} failed to send 3 times. Abandoning.", email.Id);
             await _emailQueueEntityRepository.Delete(email.Id);
             return;
         }
         _logger.LogInformation("Re-queueing email {id} for sending in 30 seconds", email.Id);
-        email.Attempt += 1;
         email.SendOn = email.SendOn.AddSeconds(30);
         await _emailQueueEntityRepository.Update(email);
     }
@@ -100,7 +100,7 @@ public class EmailService : IEmailService
             var model = new EmailModel();
             if (email.Model != null)
                 model = JsonConvert.DeserializeObject<EmailModel>(email.Model);
-            
+            email.Attempt += 1;
             var mail = _fluentEmail.To(user.Email, user.Username)
                 .Subject(model!.Subject)
                 .SetFrom(_config.Smtp.SenderEmail, _config.Smtp.SenderName)
@@ -108,13 +108,14 @@ public class EmailService : IEmailService
             var response = await mail.SendAsync();
             if (response.Successful)
             {
+                _logger.LogError("{type} Email {id} sent to user: {username} ({email}).", email.Type.ToString(), email.Id, user.Username, user.Email!.MaskEmail());
                 email.Sent = true;
                 email.SentOn = DateTime.Now;
                 await _emailQueueEntityRepository.Update(email);
             }
             else
             {
-                _logger.LogError("Failed to send email {id}: {errors}", email.Id, string.Join(", ", response.ErrorMessages));
+                _logger.LogError("Failed to send {type} email {id} to user: {username} ({email}) - Attempt {attempt}. {errors}", email.Type.ToString(), email.Id, user.Username, user.Email!.MaskEmail(), email.Attempt.ToString(), string.Join(", ", response.ErrorMessages));
                 await ReQueueForRetry(email);
             }
         }
@@ -150,7 +151,7 @@ public class EmailService : IEmailService
             }
             catch (Exception e)
             {
-                _logger.LogError("Error sending email {id}. {exception}", email.Id, e.Message);
+                _logger.LogError("Error sending {type} email {id} - Attempt {attempt}. {exception}", email.Type.ToString(), email.Id, email.Attempt, e.Message);
                 await ReQueueForRetry(email);
             }
         }
