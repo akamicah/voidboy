@@ -108,7 +108,7 @@ public class EmailService : IEmailService
             var response = await mail.SendAsync();
             if (response.Successful)
             {
-                _logger.LogError("{type} Email {id} sent to user: {username} ({email}).", email.Type.ToString(), email.Id, user.Username, user.Email!.MaskEmail());
+                _logger.LogInformation("{type} Email {id} sent to user: {username} ({email}).", email.Type.ToString(), email.Id, user.Username, user.Email!.MaskEmail());
                 email.Sent = true;
                 email.SentOn = DateTime.Now;
                 await _emailQueueEntityRepository.Update(email);
