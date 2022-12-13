@@ -2,7 +2,6 @@ using Dapper;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.DAL.Infrastructure;
-using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
@@ -47,7 +46,18 @@ public class UserGroupRepository : BaseRepository<UserGroup>, IUserGroupReposito
     
     public async Task<UserGroup?> Update(UserGroup entity)
     {
-        throw new NotImplementedException();
+        using var con = await DbContext.CreateConnectionAsync();
+        var id = await con.ExecuteAsync(
+            @"UPDATE userGroups SET name = @name, description = @description, rating = @rating WHERE id = @id",
+            new
+            {
+                entity.Id,
+                entity.Name,
+                entity.Description,
+                entity.Rating
+            });
+
+        return await Retrieve(entity.Id);
     }
 
    

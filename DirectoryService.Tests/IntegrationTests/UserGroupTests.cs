@@ -15,6 +15,64 @@ public class UserGroupTests : TestBase
     }
 
     [Test]
+    public async Task UserGroupCreationAndUpdateTest()
+    {
+        var userService = _factory!.Services.GetRequiredService<UserService>();
+        var userGroupService = _factory!.Services.GetRequiredService<UserGroupService>();
+        var user = await userService.FindUser("testadmin");
+        
+        Assert.That(user, Is.Not.Null);
+        
+        var group = await userGroupService.Create(user!.Id, new UserGroup()
+        {
+            Name = "Test Group",
+            Description = "This is my test group",
+            Rating = MaturityRating.Everyone,
+            Internal = false
+        });
+        
+        
+        Assert.That(group, Is.Not.Null);
+
+        // Ensure we can retrieve the group
+        group = await userGroupService.FindById(group.Id);
+        
+        Assert.That(group, Is.Not.Null);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(group.Name, Is.EqualTo("Test Group"));
+            Assert.That(group.Description, Is.EqualTo("This is my test group"));
+            Assert.That(group.Rating, Is.EqualTo(MaturityRating.Everyone));
+        });
+
+        // Update group with new values
+        group.Rating = MaturityRating.Adult;
+        group.Name = "Adult Group";
+        group.Description = "My Adult Group";
+
+        group = await userGroupService.Update(group);
+        
+        Assert.That(group, Is.Not.Null);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(group.Name, Is.EqualTo("Adult Group"));
+            Assert.That(group.Description, Is.EqualTo("My Adult Group"));
+            Assert.That(group.Rating, Is.EqualTo(MaturityRating.Adult));
+        });
+
+        
+        // Delete group and verify deletion
+        await userGroupService.Delete(group);
+        
+        group = await userGroupService.FindById(group.Id);
+        
+        Assert.That(group, Is.Null);
+
+    }
+
+    [Test]
     public async Task UserGroupMembershipsTest()
     {
         var userService = _factory!.Services.GetRequiredService<UserService>();
@@ -44,6 +102,9 @@ public class UserGroupTests : TestBase
         // Add Members
         await userGroupService.AddGroupMembers(newGroup!.Id, new []{ user2!.Id, user3!.Id });
         
+        // Should do nothing as user already a member
+        await userGroupService.AddGroupMember(newGroup!.Id, user2!.Id);
+        
         // Retrieve Members
         var members = await userGroupService.GetGroupMembers(newGroup!.Id, PaginatedRequest.All());
         
@@ -58,6 +119,9 @@ public class UserGroupTests : TestBase
         
         // Should contain only owner as owner can't be removed
         Assert.That(members.Data!.Count, Is.EqualTo(1));
+
+        // Delete group
+        await userGroupService.Delete(newGroup);
 
     }
 }
