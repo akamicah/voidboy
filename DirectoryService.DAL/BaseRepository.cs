@@ -26,10 +26,10 @@ public class BaseRepository<T>
         var paramIx = 1;
         foreach (var (col, value) in page.Where.ToDictionary())
         {
-            if (value.Count() == 1)
+            if (value.Count == 1)
             {
-                sqlWhere += $@" AND {tableName}.{col} = @p{paramIx}";
-                dynamicParameters.Add("p" + paramIx, value.First());
+                sqlWhere += $@" AND {tableName}.{col} = @_p{paramIx}";
+                dynamicParameters.Add("_p" + paramIx, value.First());
                 paramIx += 1;
             }
             else
@@ -37,8 +37,8 @@ public class BaseRepository<T>
                 sqlWhere += $@" AND {tableName}.{col} IN ( ";
                 foreach (var p in value)
                 {
-                    sqlWhere += $@"@p{paramIx}, ";
-                    dynamicParameters.Add("p" + paramIx, p);
+                    sqlWhere += $@"@_p{paramIx}, ";
+                    dynamicParameters.Add("_p" + paramIx, p);
                     paramIx += 1;
                 }
 
@@ -49,8 +49,8 @@ public class BaseRepository<T>
         if (page.Search != null && page.SearchOn != null)
         {
             var like = "%" + page.Search + "%";
-            sqlWhere += $@" AND {tableName}.{page.SearchOn} LIKE @p{paramIx}";
-            dynamicParameters.Add("p" + paramIx, like);
+            sqlWhere += $@" AND {tableName}.{page.SearchOn} LIKE @_p{paramIx}";
+            dynamicParameters.Add("_p" + paramIx, like);
         }
 
         if (page.OrderBy != null)
@@ -60,9 +60,9 @@ public class BaseRepository<T>
                 sqlWhere += $@" DESC";
         }
         
-        sqlWhere += " OFFSET @pOffset LIMIT @pLimit ";
-        dynamicParameters.Add("pOffset", (page.Page - 1) * page.PageSize );
-        dynamicParameters.Add("pLimit", page.PageSize );
+        sqlWhere += " OFFSET @_pOffset LIMIT @_pLimit ";
+        dynamicParameters.Add("_pOffset", (page.Page - 1) * page.PageSize );
+        dynamicParameters.Add("_pLimit", page.PageSize );
 
             sqlTemplate += sqlWhere;
         

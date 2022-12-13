@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+
 namespace DirectoryService.Shared.Config;
 
 public static class ServicesConfigContainer
@@ -22,6 +24,13 @@ public class ServiceConfiguration
         public string? ServerUrl { get; set; }
         public string? IceServerUrl { get; set; }
         public string? DashboardUrl { get; set; }
+        public MetaverseVersion? MetaverseVersion { get; set; }
+    }
+
+    public class MetaverseVersion
+    {
+        public string? Version { get; set; }
+        public string? Codename { get; set; }
     }
     
     public class DbConfig

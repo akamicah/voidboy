@@ -24,4 +24,14 @@ public class PaginatedRequest
         OrderBy = "createdAt";
         OrderAscending = true;
     }
+
+    public static PaginatedRequest All()
+    {
+        var request = new PaginatedRequest
+        {
+            Page = 1,
+            PageSize = int.MaxValue
+        };
+        return request;
+    }
 }

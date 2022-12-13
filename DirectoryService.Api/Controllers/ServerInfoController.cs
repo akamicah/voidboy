@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Shared.Config;
@@ -31,17 +32,9 @@ public class ServerInfoController : ControllerBase
             MetaverseName = _configuration.MetaverseInfo.Name,
             MetaverseNickName = _configuration.MetaverseInfo.Nickname,
             IceServerUrl = _configuration.MetaverseInfo.IceServerUrl,
-            MetaverseServerVersion = new MetaverseVersionModel()
-            {
-                Project = "Void Boy"
-            },
+            MetaverseServerVersion = _configuration.MetaverseInfo.MetaverseVersion,
             MetaverseUrl = _configuration.MetaverseInfo.ServerUrl
         });
-    }
-
-    public class MetaverseVersionModel
-    {
-        public string? Project { get; set; }
     }
 
     public class MetaverseInfoModel
@@ -59,6 +52,6 @@ public class ServerInfoController : ControllerBase
         public string? IceServerUrl { get; set; }
 
         [JsonPropertyName("metaverse_server_version")]
-        public MetaverseVersionModel? MetaverseServerVersion { get; set; }
+        public ServiceConfiguration.MetaverseVersion? MetaverseServerVersion { get; set; }
     }
 }

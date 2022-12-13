@@ -2,6 +2,7 @@ using Dapper;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.DAL.Infrastructure;
+using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
 
 namespace DirectoryService.DAL;
@@ -30,11 +31,24 @@ public class UserGroupRepository : BaseRepository<UserGroup>, IUserGroupReposito
                 entity.Rating
             });
 
-        return await Retrieve(id);
+        var result = await Retrieve(id);
+
+        if (result is not null)
+            await con.ExecuteAsync(@"INSERT INTO userGroupMembers(userGroupId, userId, isOwner) 
+                                    VALUES (@groupId, @userId, true);",
+                new
+                {
+                    GroupId = result.Id,
+                    UserId = entity.OwnerUserId
+                });
+
+        return result;
     }
     
     public async Task<UserGroup?> Update(UserGroup entity)
     {
         throw new NotImplementedException();
     }
+
+   
 }
