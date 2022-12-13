@@ -30,7 +30,7 @@ public class BaseRepository<T>
             {
                 sqlWhere += $@" AND {tableName}.{col} = @p{paramIx}";
                 dynamicParameters.Add("p" + paramIx, value.First());
-                paramIx = +1;
+                paramIx += 1;
             }
             else
             {
@@ -39,7 +39,7 @@ public class BaseRepository<T>
                 {
                     sqlWhere += $@"@p{paramIx}, ";
                     dynamicParameters.Add("p" + paramIx, p);
-                    paramIx = +1;
+                    paramIx += 1;
                 }
 
                 sqlWhere = sqlWhere[^2..] + ")";

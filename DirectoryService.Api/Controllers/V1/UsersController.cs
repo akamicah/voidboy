@@ -1,6 +1,7 @@
 using System.Net;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
+using DirectoryService.Api.Models;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
@@ -30,15 +31,6 @@ public sealed class UsersController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         var result = await _userService.ListRelativeUsers(page);
         return Success(new UserListModel(result));
-    }
-
-    private class UserListModel
-    {
-        public UserListModel(PaginatedResponse<UserSearchResultDto> result)
-        {
-            Users = result.Data!;
-        }
-        public IEnumerable<UserSearchResultDto> Users { get; set; }
     }
 
     /// <summary>

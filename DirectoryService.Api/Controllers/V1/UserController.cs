@@ -1,6 +1,9 @@
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Helpers;
+using DirectoryService.Api.Models;
+using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
+using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -102,10 +105,12 @@ public sealed class UserController : V1ApiController
     [Authorise]
     public async Task<IActionResult> GetUserConnections()
     {
-        //TODO
-        throw new NotImplementedException();
+        var page = PaginatedRequest("username", true, "username");
+        page.Where.Add("connection", true);
+        var result = await _userService.ListRelativeUsers(page);
+        return Success(new UserListModel(result));;
     }
-    
+
     /// <summary>
     /// Upgrade a connection to a friend (not implemented)
     /// </summary>
@@ -135,8 +140,19 @@ public sealed class UserController : V1ApiController
     [Authorise]
     public async Task<IActionResult> GetFriends()
     {
-        //TODO
-        throw new NotImplementedException();
+        var page = PaginatedRequest("username", true, "username");
+        page.Where.Add("friend", true);
+        var result = await _userService.ListRelativeUsers(page);
+        return Success(new UserFriendsModel(result));
+    }
+    
+    private class UserFriendsModel
+    {
+        public UserFriendsModel(PaginatedResponse<UserSearchResultDto> result)
+        {
+            Friends = result.Data?.Select(x => x.Username!).ToList() ?? new List<string>();
+        }
+        public List<string> Friends { get; set; }
     }
     
     /// <summary>
