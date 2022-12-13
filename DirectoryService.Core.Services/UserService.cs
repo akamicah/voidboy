@@ -190,8 +190,8 @@ public sealed class UserService
 
         await _userRepository.Update(createdUser);
 
-        _logger.LogInformation("New user registration. Username: {username}, Email: {email}",
-            registerUserDto.Username, registerUserDto.Email!.MaskEmail());
+        _logger.LogInformation("New user registration. Username: {username}, Email: {email}, Originating IP: {ip}",
+            registerUserDto.Username, registerUserDto.Email!.MaskEmail(), registerUserDto.OriginIp?.ToString() ?? "Unknown" );
 
         if (_configuration.Registration.RequireEmailVerification)
             await _userActivationService.SendUserActivationRequest(createdUser!);

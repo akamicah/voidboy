@@ -16,7 +16,7 @@ public class ServiceConfiguration
     public TokenConfig Tokens { get; set; }
     public ServerConfig Server { get; set; }
     public SmtpConfig Smtp { get; set; }
-    
+
     public class MetaverseInfoConfig
     {
         public string? Name { get; set; }
@@ -91,9 +91,7 @@ public class ServiceConfiguration
         public string? SenderName { get; set; }
         public string? Host { get; set; }
         public int Port { get; set; }
-        public bool Secure { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
     }
-    
 }

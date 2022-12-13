@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 // ReSharper disable CommentTypo
 // ReSharper disable UnusedParameter.Local
@@ -39,24 +42,23 @@ public class Startup
         builder.Services.AddControllers()
             .AddJsonOptions(o =>
                 o.JsonSerializerOptions.PropertyNamingPolicy = new SnakeCaseNamingPolicy());
- 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddLogging(opt =>
-            {
-                opt.AddSystemdConsole();
-                opt.AddCustomFormatter();
-            })
-            .Configure<LoggerFilterOptions>(c => c.MinLevel = LogLevel.Information);
+
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "logs/");
         
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .WriteTo.File(baseDir + "log.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        
+        builder.Host.UseSerilog();
         builder.Services.RegisterServices();
 
         SetupConfiguration();
 
         var config = ServicesConfigContainer.Config;
-        
-        
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-        var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "templates/email/");
         
         builder.Services.AddFluentEmail(
                 ServicesConfigContainer.Config.Smtp.SenderEmail,
@@ -110,6 +112,7 @@ public class Startup
         app.UseApiExceptionHandler();
         app.MapControllers();
         
+        _logger.LogInformation("---------- Server Starting ----------");
         if (!DatabaseMigrator.MigrateDatabase(_logger))
             return;
 
@@ -134,6 +137,10 @@ public class Startup
         var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
         JobManager.Initialize(new JobRegistry(serviceScopeFactory));
         
+        _logger.LogInformation("Http Port: {port}", ServicesConfigContainer.Config.Server.HttpPort);
+        if(ServicesConfigContainer.Config.Server.UseHttps)
+            _logger.LogInformation("Https Port: {port}", ServicesConfigContainer.Config.Server.HttpsPort);
+        _logger.LogInformation("Running Server");
         app.Run();
     }
 
