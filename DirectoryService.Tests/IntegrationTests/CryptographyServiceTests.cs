@@ -1,4 +1,5 @@
 using DirectoryService.Core.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Tests.IntegrationTests;
 
@@ -11,7 +12,7 @@ public class CryptographyServiceTests : TestBase
     }
 
     [Test]
-    public Task CryptographicHashingTests()
+    public async Task CryptographicHashingTests()
     {
         const string password = "Password1234!";
         const string badPassword = "Password123!";
@@ -50,7 +51,23 @@ public class CryptographyServiceTests : TestBase
             Assert.That(CryptographyService.AuthenticatePassword(badPassword, hash2.Hash!), Is.False);
             Assert.That(CryptographyService.AuthenticatePassword(badPassword, hash3.Hash!), Is.False);
         });
+       
+    }
+
+    [Test]
+    public async Task CanConvertPublicKeysTest()
+    {
+        var cryptographyService = _factory!.Services.GetRequiredService<CryptographyService>();
         
-        return Task.CompletedTask;
+        var publicKeyDer = await File.ReadAllBytesAsync("./TestData/public-key.der");
+        var publicKeyPem = await File.ReadAllTextAsync("./TestData/public-key.pem");
+        
+        publicKeyPem = publicKeyPem.Replace("-----BEGIN PUBLIC KEY-----", "");
+        publicKeyPem = publicKeyPem.Replace("-----END PUBLIC KEY-----", "");
+        publicKeyPem = publicKeyPem.Replace("\n", "");
+        
+        var generatedPem = await cryptographyService.ConvertPkcs1Key(publicKeyDer);
+        
+        Assert.That(generatedPem, Is.EqualTo(publicKeyPem));
     }
 }

@@ -22,4 +22,10 @@
       <ProjectReference Include="..\DirectoryService.Core.Services\DirectoryService.Core.Services.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="TestData\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
