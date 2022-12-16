@@ -17,7 +17,7 @@ public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
         RuleFor(m => m.Username).NotEmpty().WithMessage("{PropertyName} not provided.")
             .MinimumLength(config.MinUsernameLength).WithMessage("{PropertyName} must be a minimum of " + config.MinUsernameLength + " characters")
             .MaximumLength(config.MaxUsernameLength).WithMessage("{PropertyName} must be a maximum of " + config.MaxUsernameLength + "characters")
-            .Matches(@"^[0-9a-zA-Z ]+$").WithMessage("{PropertyName} can only contain letters and numbers")
+            .Matches(@"^[A-Za-z0-9._-]+$").WithMessage("{PropertyName} can only contain letters, numbers, hyphens, dashes, periods.")
             .Custom((s, context) =>
             {
                 if(profanityFilter.IsProfanity(s.ToLower()))
