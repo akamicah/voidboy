@@ -1,12 +1,8 @@
 using System.Reflection;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Api.Providers;
-using DirectoryService.Core.Services;
 using DirectoryService.Core.Services.Interfaces;
-using DirectoryService.Core.Validators;
-using DirectoryService.DAL.Infrastructure;
 using DirectoryService.Shared.Attributes;
-using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Extensions;
@@ -17,7 +13,6 @@ public static class ServiceExtensions
     /// Register services for dependency injection
     /// </summary>
     /// <param name="serviceCollection"></param>
-    /// <param name="configuration"></param>
     public static void RegisterServices(this IServiceCollection serviceCollection)
     {
         var assemblies = GetProjectAssemblies.GetAssemblies();

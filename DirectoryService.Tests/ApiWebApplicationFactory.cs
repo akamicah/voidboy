@@ -14,6 +14,7 @@ public class ApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.AddScoped<IEmailService, MockEmailService>();
+            services.AddScoped<ISessionProvider, TestSessionProvider>();
         });
 
         base.ConfigureWebHost(builder);

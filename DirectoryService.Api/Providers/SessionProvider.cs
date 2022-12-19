@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using DirectoryService.Core.Entities;
 using DirectoryService.Core.RepositoryInterfaces;
 using DirectoryService.Core.Services.Interfaces;
-using DirectoryService.Shared.Attributes;
+using DirectoryService.Shared;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
@@ -30,10 +30,14 @@ public class SessionProvider : ISessionProvider
     {
         if (_httpContextAccessor.HttpContext?.Items["Session"] != null)
         {
-            return (Session) _httpContextAccessor.HttpContext.Items["Session"]!;
+            return (Session)_httpContextAccessor.HttpContext.Items["Session"]!;
         }
 
         Guid token;
+        var asAdmin = false;
+
+        if (_httpContextAccessor.HttpContext is null)
+            return null;
         try
         {
             var authHeader =
@@ -43,6 +47,13 @@ public class SessionProvider : ISessionProvider
             if (tokenString is null) return null;
 
             if (!Guid.TryParse(tokenString, out token)) return null;
+
+            var asAdminParam =
+                (_httpContextAccessor.HttpContext!.Request.Query).FirstOrDefault(x => x.Key.ToLower() == "asadmin");
+            if (asAdminParam.Key != "" && bool.TryParse(asAdminParam.Value.ToString(), out var paramValue))
+            {
+                asAdmin = paramValue;
+            }
         }
         catch
         {
@@ -60,9 +71,10 @@ public class SessionProvider : ISessionProvider
             Token = sessionToken.Id,
             AccountId = sessionToken.AccountId,
             Scope = sessionToken.Scope,
-            Role = user.Role
+            Role = user.Role,
+            AsAdmin = user.Role == UserRole.Admin && asAdmin
         };
-        
+
         _httpContextAccessor.HttpContext!.Items["Session"] = session;
         return session;
     }

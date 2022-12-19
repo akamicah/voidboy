@@ -13,7 +13,7 @@ CREATE TABLE domains
     visibility       SMALLINT                                     DEFAULT 1                 NOT NULL,
     publicKey        TEXT                                         DEFAULT NULL,
     apiKey           UUID                                         DEFAULT NULL,
-    sponsorAccount   UUID REFERENCES users (id) ON DELETE CASCADE DEFAULT NULL,
+    sponsorUserId    UUID REFERENCES users (id) ON DELETE CASCADE DEFAULT NULL,
     iceServerAddress TEXT                                         DEFAULT NULL,
     version          TEXT                                         DEFAULT NULL,
     protocol         TEXT                                         DEFAULT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE domains
     anonUsers        INT                                          DEFAULT 0,
     capacity         INT                                          DEFAULT 0,
     restriction      SMALLINT                                     DEFAULT 1,
-    tags             TEXT                                         DEFAULT '',
+    tags             JSONB                                        DEFAULT NULL,
     registerIp       TEXT                                         DEFAULT NULL,
     lastHeartbeat    TIMESTAMP                                    DEFAULT NULL,
     lastSenderKey    TEXT                                         DEFAULT ''

@@ -73,7 +73,10 @@ public sealed class UserService
     /// </summary>
     public async Task<PaginatedResult<UserSearchResultDto>> ListRelativeUsers(PaginatedRequest page)
     {
-        if(!page.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null) throw new UnauthorisedApiException();
+        
+        if(!session.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
             page.Where.Add("connection", true);
         
         if(page.Filter != null && page.Filter.Contains("friends"))
@@ -236,6 +239,9 @@ public sealed class UserService
     /// </summary>
     public async Task DeleteUser(Guid userId)
     {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null || !session.AsAdmin) throw new UnauthorisedApiException();
+
         var user = await _userRepository.Retrieve(userId);
         if (user is null)
             throw new UserNotFoundApiException();
