@@ -41,4 +41,22 @@ public class DbContext
         var script = File.ReadAllText(baseDir + "/" + filename);
         con.Execute(script);
     }
+
+    public static void Configure()
+    {
+        SqlMapper.AddTypeHandler(new StringListTypeHandler<List<string>>());
+    }
+}
+
+public class StringListTypeHandler<T> : SqlMapper.TypeHandler<List<string>>
+{
+    public override List<string> Parse(object value)
+    {
+        return ((string[])value).ToList();
+    }
+
+    public override void SetValue(IDbDataParameter parameter, List<string> value)
+    {
+        parameter.Value = value.ToArray();
+    }
 }

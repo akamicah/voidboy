@@ -22,12 +22,12 @@ public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionToke
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"INSERT INTO sessionTokens (accountId, scope, expires)
-                VALUES( @accountId, @scope, @expires )
+            @"INSERT INTO sessionTokens (userId, scope, expires)
+                VALUES( @userId, @scope, @expires )
                 RETURNING id;",
             new
             {
-                entity.AccountId,
+                entity.UserId,
                 Scope = entity.Scope,
                 entity.Expires,
             });
@@ -57,25 +57,5 @@ public class SessionTokenRepository : BaseRepository<SessionToken>, ISessionToke
     {
         using var con = await DbContext.CreateConnectionAsync();
         await con.ExecuteAsync(@"DELETE FROM sessionTokens WHERE expires < CURRENT_TIMESTAMP");
-    }
-    
-    public async Task<PaginatedResult<SessionToken>> ListAccountTokens(Guid accountId, PaginatedRequest page)
-    {
-        using var con = await DbContext.CreateConnectionAsync();
-        var result = await con.QueryAsync<SessionToken>(
-            @"SELECT * FROM sessionTokens WHERE accountId = @accountId ORDER BY createdAt LIMIT @pageSize OFFSET @offset",
-            new
-            {
-                accountId,
-                pageSize = page.PageSize,
-                offset = (page.Page - 1) * page.PageSize
-            });
-
-        return new PaginatedResult<SessionToken>()
-        {
-            Data = result,
-            Page = page.Page,
-            PageSize = page.PageSize
-        };
     }
 }

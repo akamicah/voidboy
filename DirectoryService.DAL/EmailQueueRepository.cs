@@ -18,12 +18,12 @@ public class EmailQueueEntityRepository : BaseRepository<QueuedEmail>, IEmailQue
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"INSERT INTO emailQueue (accountId, model, type, sendOn)
-                VALUES( @accountId, @model, @type, @sendOn )
+            @"INSERT INTO emailQueue (userId, model, type, sendOn)
+                VALUES( @userId, @model, @type, @sendOn )
                 RETURNING id;",
             new
             {
-                entity.AccountId,
+                entity.UserId,
                 entity.Model,
                 entity.Type,
                 entity.SendOn

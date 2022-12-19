@@ -52,13 +52,13 @@ public sealed class AccountsController : V1ApiController
     /// </summary>
     [HttpGet("{accountReference}")]
     [Authorise]
-    public async Task<IActionResult> GetAccount(string accountReference)
+    public async Task<IActionResult> GetUser(string userReference)
     {
-        var account = await _userService.FindUser(accountReference);
-        if (account is null)
+        var user = await _userService.FindUser(userReference);
+        if (user is null)
             throw new UserNotFoundApiException();
         
-        RestrictToSelfOrAdmin(account.Id);
+        RestrictToSelfOrAdmin(user.Id);
         
         
         //TODO
@@ -79,13 +79,13 @@ public sealed class AccountsController : V1ApiController
     }
     
     /// <summary>
-    /// (Admin) Delete account by account id
+    /// (Admin) Delete user by user id, username or email
     /// </summary>
-    [HttpDelete("{accountReference}")]
+    [HttpDelete("{userReference}")]
     [Authorise(UserRole.Admin)]
-    public async Task<IActionResult> DeleteAccount(string accountReference)
+    public async Task<IActionResult> Delete(string userReference)
     {
-        var account = await _userService.FindUser(accountReference);
+        var account = await _userService.FindUser(userReference);
         if (account is null)
             throw new UserNotFoundApiException();
         
@@ -120,26 +120,24 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Return active token(s) for account
     /// </summary>
-    [HttpGet("{accountReference}/tokens")]
+    [HttpGet("{userReference}/tokens")]
     [Authorise]
-    public async Task<IActionResult> GetAccountTokens(string accountReference)
+    public async Task<IActionResult> GetTokens(string userReference)
     {
-        var account = await _userService.FindUser(accountReference);
-        if (account is null)
+        var user = await _userService.FindUser(userReference);
+        if (user is null)
             throw new UserNotFoundApiException();
-        
-        RestrictToSelfOrAdmin(account.Id);
         
         var page = PaginatedRequest();
 
-        var result = await _sessionTokenService.ListAccountTokens(account.Id, page);
-        return new JsonResult(result.Data is not null ? new AccountTokenListModel(result.Data) : new AccountTokenListModel());
+        var result = await _sessionTokenService.ListUserTokens(user.Id, page);
+        return new JsonResult(result.Data is not null ? new UserTokenListModel(result.Data) : new UserTokenListModel());
     }
 
     /// <summary>
     /// Model for V1 of the API
     /// </summary>
-    private class AccountTokenModel
+    private class UserTokenModel
     {
         [JsonPropertyName("id")] 
         public Guid Id { get; set; }
@@ -166,19 +164,19 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Model for V1 of the API
     /// </summary>
-    private class AccountTokenListModel
+    private class UserTokenListModel
     {
-        public AccountTokenListModel()
+        public UserTokenListModel()
         {
-            Tokens = new List<AccountTokenModel>();
+            Tokens = new List<UserTokenModel>();
         }
 
-        public AccountTokenListModel(IEnumerable<SessionToken> sessionTokens)
+        public UserTokenListModel(IEnumerable<SessionToken> sessionTokens)
         {
-            Tokens = new List<AccountTokenModel>();
+            Tokens = new List<UserTokenModel>();
             foreach (var sessionToken in sessionTokens)
             {
-                Tokens.Add(new AccountTokenModel()
+                Tokens.Add(new UserTokenModel()
                 {
                     CreatedOn = sessionToken.CreatedAt,
                     ExpiresOn = sessionToken.Expires,
@@ -195,23 +193,21 @@ public sealed class AccountsController : V1ApiController
         }
         
         [JsonPropertyName("tokens")]
-        public List<AccountTokenModel> Tokens { get; set; }
+        public List<UserTokenModel> Tokens { get; set; }
     }
     
     /// <summary>
     /// Delete an account's token
     /// </summary>
-    [HttpDelete("{accountReference}/tokens/{token:guid}")]
+    [HttpDelete("{userReference}/tokens/{token:guid}")]
     [Authorise]
-    public async Task<IActionResult> DeleteAccountToken(string accountReference, Guid token)
+    public async Task<IActionResult> DeleteToken(string userReference, Guid token)
     {
-        var account = await _userService.FindUser(accountReference);
-        if (account is null)
+        var user = await _userService.FindUser(userReference);
+        if (user is null)
             throw new UserNotFoundApiException();
-        
-        RestrictToSelfOrAdmin(account.Id);
-        
-        await _sessionTokenService.RevokeAccountToken(account.Id, token);
+      
+        await _sessionTokenService.RevokeUserToken(user.Id, token);
         
         return Success();
     }

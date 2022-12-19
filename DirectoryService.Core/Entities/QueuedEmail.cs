@@ -5,7 +5,7 @@ namespace DirectoryService.Core.Entities;
 public class QueuedEmail : BaseEntity
 {
     public EmailType Type { get; set; }
-    public Guid AccountId { get; set; }
+    public Guid UserId { get; set; }
     public string? Model { get; set; }
     public DateTime SendOn { get; set; }
     public int Attempt { get; set; }

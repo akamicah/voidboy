@@ -14,7 +14,7 @@ INSERT INTO userGroups(id, ownerUserId, internal, name, description, rating) VAL
 ('ef6f13f8-b47c-43aa-bff4-3a920663def0', '8b63354b-4aa0-4f8c-9b91-ccb332b8939c', true, '', 'user2 friends', 1);
 
 -- Session Tokens
-INSERT INTO sessionTokens(id, refreshtoken, accountid, scope, expires) VALUES
+INSERT INTO sessionTokens(id, refreshtoken, userId, scope, expires) VALUES
 ('b4b7349b-40f8-40a2-a829-926f5d5f3124', 'd72dbc18-c70b-4f36-987f-51babf406d5a', '6465b186-5fc9-46d2-842f-da8542ba9939', 1, '2025-12-19 13:24:50.321461');
 
 -- User Profiles

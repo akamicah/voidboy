@@ -7,9 +7,9 @@ using DirectoryService.Shared.Attributes;
 namespace DirectoryService.DAL;
 
 [ScopedDependency]
-public class DomainRespository : BaseRepository<Domain>, IDomainRepository
+public class DomainRepository : BaseRepository<Domain>, IDomainRepository
 {
-    public DomainRespository(DbContext db) : base(db)
+    public DomainRepository(DbContext db) : base(db)
     {
         TableName = "domains";
     }
@@ -18,8 +18,8 @@ public class DomainRespository : BaseRepository<Domain>, IDomainRepository
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"INSERT INTO domains (name, description, contactInfo, hostNames, thumbnailUrl, images, maturity, visibility, publicKey, apiKey, sponsorUserId, iceServerAddress, version, protocol, networkAddress, networkPort, networkingMode, restricted, numUsers, anonUsers, capacity, restriction, tags, registerIp, lastHeartBeat, lastSenderKey) 
-                VALUES( @name, @description, @contactInfo, @hostNames, @thumbnailUrl, @images, @maturity, @visibility, @publicKey, @apiKey, @sponsorUserId, @iceServerAddress, @version, @protocol, @networkAddress, @networkPort, @networkingMode, @restricted, @numUsers, @anonUsers, @capacity, @restriction, @tags, @registerIp, @lastHeartBeat, @lastSenderKey)
+            @"INSERT INTO domains (name, description, contactInfo, hostNames, thumbnailUrl, images, maturity, visibility, publicKey, apiKey, sponsorUserId, iceServerAddress, version, protocol, networkAddress, networkPort, networkingMode, restricted, numUsers, anonUsers, capacity, restriction, tags, creatorIp, lastHeartBeat, lastSenderKey) 
+                VALUES( @name, @description, @contactInfo, @hostNames, @thumbnailUrl, @images, @maturity, @visibility, @publicKey, @apiKey, @sponsorUserId, @iceServerAddress, @version, @protocol, @networkAddress, @networkPort, @networkingMode, @restricted, @numUsers, @anonUsers, @capacity, @restriction, @tags, @creatorIp, @lastHeartBeat, @lastSenderKey)
                 RETURNING id;",
             new
             {
@@ -46,7 +46,7 @@ public class DomainRespository : BaseRepository<Domain>, IDomainRepository
                 entity.Capacity,
                 entity.Restriction,
                 entity.Tags,
-                entity.RegisterIp,
+                entity.CreatorIp,
                 entity.LastHeartbeat,
                 entity.LastSenderKey
             });
@@ -54,6 +54,20 @@ public class DomainRespository : BaseRepository<Domain>, IDomainRepository
         return await Retrieve(id);
     }
 
+    public async Task<Domain?> FindByName(string name)
+    {
+        using var con = await DbContext.CreateConnectionAsync();
+        name = name.ToLower();
+        var entity = await con.QueryFirstOrDefaultAsync<Domain>(
+            @"SELECT * FROM domains WHERE LOWER(name) = :name",
+            new
+            {
+                name
+            });
+
+        return entity;
+    }
+    
     public async Task<Domain?> Update(Domain entity)
     {
         throw new NotImplementedException();

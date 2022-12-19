@@ -38,6 +38,37 @@ public class UserRepository : BaseRepository<User>, IUserRepository
                 entity.CreatorIp
             });
 
+        var connectionGroup = await con.QuerySingleAsync<Guid>(
+            @"INSERT INTO userGroups (ownerUserId, internal, name, description, rating)
+                VALUES( @ownerUserId, @internal, @name, @description, @rating )
+                RETURNING id;",
+            new
+            {
+                OwnerUserId = id,
+                Internal = true,
+                Name = entity.Username + " Connections",
+                Description = entity.Username + " Connections",
+                Rating = MaturityRating.Everyone
+            });
+        
+        var friendsGroup = await con.QuerySingleAsync<Guid>(
+            @"INSERT INTO userGroups (ownerUserId, internal, name, description, rating)
+                VALUES( @ownerUserId, @internal, @name, @description, @rating )
+                RETURNING id;",
+            new
+            {
+                OwnerUserId = id,
+                Internal = true,
+                Name = entity.Username + " Friends",
+                Description = entity.Username + " Friends",
+                Rating = MaturityRating.Everyone
+            });
+
+        entity.ConnectionGroup = connectionGroup;
+        entity.FriendsGroup = friendsGroup;
+        
+        await Update(entity);
+        
         return await Retrieve(id);
     }
 
@@ -74,6 +105,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     public async Task<User?> FindByUsername(string username)
     {
         using var con = await DbContext.CreateConnectionAsync();
+        username = username.ToLower();
         var entity = await con.QueryFirstOrDefaultAsync<User>(
             @"SELECT * FROM users WHERE LOWER(username) = :username",
             new

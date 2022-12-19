@@ -8,17 +8,22 @@ CREATE TABLE places
     description           TEXT             DEFAULT ''                    NOT NULL,
     visibility            SMALLINT         DEFAULT 1                     NOT NULL,
     maturity              SMALLINT         DEFAULT 0                     NOT NULL,
-    tags                  JSONB            DEFAULT NULL                  NOT NULL,
+    tags                  TEXT[]           DEFAULT NULL,
     domainId              UUID REFERENCES domains (id) ON DELETE CASCADE NOT NULL,
     path                  TEXT             DEFAULT ''                    NOT NULL,
     thumbnailUrl          TEXT             DEFAULT ''                    NOT NULL,
+    imageUrls             TEXT[],
     currentAttendance     INT,
-    currentInfo           JSONB,
+    currentInfo           TEXT,
     currentLastUpdateTime TIMESTAMP,
     currentApiKeyTokenId  UUID,
-    registerIp            TEXT             DEFAULT NULL,
+    creatorIp             TEXT             DEFAULT NULL,
     lastActivity          TIMESTAMP        DEFAULT NULL
 );
-    
-    
+
+CREATE TRIGGER places_updated_at
+    BEFORE UPDATE
+    ON places
+    FOR EACH ROW
+EXECUTE PROCEDURE updated_at_timestamp();
     

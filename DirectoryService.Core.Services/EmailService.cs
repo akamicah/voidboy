@@ -85,7 +85,7 @@ public class EmailService : IEmailService
     /// </summary>
     private async Task SendEmail(QueuedEmail email)
     {
-        var user = await _userRepository.Retrieve(email.AccountId);
+        var user = await _userRepository.Retrieve(email.UserId);
         if (user != null)
         {
             var template = email.Type switch
@@ -100,12 +100,16 @@ public class EmailService : IEmailService
             var model = new EmailModel();
             if (email.Model != null)
                 model = JsonConvert.DeserializeObject<EmailModel>(email.Model);
+            
             email.Attempt += 1;
+            
             var mail = _fluentEmail.To(user.Email, user.Username)
                 .Subject(model!.Subject)
                 .SetFrom(_config.Smtp.SenderEmail, _config.Smtp.SenderName)
                 .UsingTemplateFromFile(template, model, true);
+            
             var response = await mail.SendAsync();
+            
             if (response.Successful)
             {
                 _logger.LogInformation("{type} Email {id} sent to user: {username} ({email}).", email.Type.ToString(), email.Id, user.Username, user.Email!.MaskEmail());

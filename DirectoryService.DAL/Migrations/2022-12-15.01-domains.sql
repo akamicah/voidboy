@@ -6,9 +6,9 @@ CREATE TABLE domains
     name             TEXT                                                                   NOT NULL,
     description      TEXT                                         DEFAULT '',
     contactInfo      TEXT                                         DEFAULT '',
-    hostNames        JSONB                                        DEFAULT NULL,
+    hostNames        TEXT[]                                       DEFAULT NULL,
     thumbnailUrl     TEXT                                         DEFAULT '',
-    images           JSONB                                        DEFAULT NULL,
+    images           TEXT[]                                       DEFAULT NULL,
     maturity         SMALLINT                                     DEFAULT 0,
     visibility       SMALLINT                                     DEFAULT 1                 NOT NULL,
     publicKey        TEXT                                         DEFAULT NULL,
@@ -25,8 +25,8 @@ CREATE TABLE domains
     anonUsers        INT                                          DEFAULT 0,
     capacity         INT                                          DEFAULT 0,
     restriction      SMALLINT                                     DEFAULT 1,
-    tags             JSONB                                        DEFAULT NULL,
-    registerIp       TEXT                                         DEFAULT NULL,
+    tags             TEXT[]                                       DEFAULT NULL,
+    creatorIp        TEXT                                         DEFAULT NULL,
     lastHeartbeat    TIMESTAMP                                    DEFAULT NULL,
     lastSenderKey    TEXT                                         DEFAULT ''
 );
@@ -42,9 +42,9 @@ CREATE TABLE domainManagers
     id        UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID()     NOT NULL,
     createdAt TIMESTAMP        DEFAULT CURRENT_TIMESTAMP     NOT NULL,
     updatedAt TIMESTAMP        DEFAULT NULL,
-    domain    UUID REFERENCES domains (id) ON DELETE CASCADE NOT NULL,
-    manager   UUID REFERENCES users (id) ON DELETE CASCADE   NOT NULL,
-    CONSTRAINT "domain_manager_unique" UNIQUE (domain, manager)
+    domainId  UUID REFERENCES domains (id) ON DELETE CASCADE NOT NULL,
+    userId    UUID REFERENCES users (id) ON DELETE CASCADE   NOT NULL,
+    CONSTRAINT "domain_manager_unique" UNIQUE (domainId, userId)
 );
 
 CREATE TRIGGER domainManagers_updated_at

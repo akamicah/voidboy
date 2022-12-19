@@ -63,13 +63,13 @@ public class SessionProvider : ISessionProvider
         var sessionToken = await _sessionTokenRepository.Retrieve(token);
         if (sessionToken is null) return null;
 
-        var user = await _userRepository.Retrieve(sessionToken.AccountId);
+        var user = await _userRepository.Retrieve(sessionToken.UserId);
         if (user is null) return null;
 
         var session = new Session()
         {
             Token = sessionToken.Id,
-            AccountId = sessionToken.AccountId,
+            UserId = sessionToken.UserId,
             Scope = sessionToken.Scope,
             Role = user.Role,
             AsAdmin = user.Role == UserRole.Admin && asAdmin

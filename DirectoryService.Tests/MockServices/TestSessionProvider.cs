@@ -11,7 +11,7 @@ public class TestSessionProvider : ISessionProvider
         // Relies on testSeed sql
         return new Session()
         {
-            AccountId = new Guid("6465b186-5fc9-46d2-842f-da8542ba9939"),
+            UserId = new Guid("6465b186-5fc9-46d2-842f-da8542ba9939"),
             AsAdmin = true,
             Role = UserRole.Admin,
             Scope = TokenScope.Owner,

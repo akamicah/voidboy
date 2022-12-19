@@ -72,7 +72,7 @@ public sealed class OAuthService
 
         var newSession = new SessionToken()
         {
-            AccountId = user.Id,
+            UserId = user.Id,
             Expires = scope switch
             {
                 TokenScope.Owner => DateTime.Now.Add(new TimeSpan(0, _configuration.Tokens.OwnerTokenLifetimeHours, 0,
@@ -112,7 +112,7 @@ public sealed class OAuthService
         if (refToken == null)
             throw new InvalidTokenApiException();
 
-        var userId = refToken.AccountId;
+        var userId = refToken.UserId;
         var user = await _userService.FindById(userId);
         
         if(user == null)
@@ -122,7 +122,7 @@ public sealed class OAuthService
         
         var newSession = new SessionToken()
         {
-            AccountId = user.Id,
+            UserId = user.Id,
             Expires = refToken.Scope switch
             {
                 TokenScope.Owner => DateTime.Now.Add(new TimeSpan(0, _configuration.Tokens.OwnerTokenLifetimeHours, 0,

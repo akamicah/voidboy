@@ -2,6 +2,6 @@ namespace DirectoryService.Core.Entities;
 
 public class ActivationToken : BaseEntity
 {
-    public Guid AccountId { get; set; }
+    public Guid UserId { get; set; }
     public DateTime Expires { get; set; }
 }

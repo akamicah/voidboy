@@ -79,11 +79,11 @@ public class Startup
             {
                 options.Listen(IPAddress.Any, config.Server.HttpsPort, listenOptions =>
                 {
-                    if (config.Server.HttpsCertPassword is not null &&  config.Server.HttpsCertPassword != "")
+                    if (config.Server.HttpsCertPassword is not null && config.Server.HttpsCertPassword != "")
                     {
                         if (config.Server.HttpsCertFile is null || !File.Exists(config.Server.HttpsCertFile))
                             throw new Exception("Https Certificate not found");
-                        
+
                         listenOptions.UseHttps(config.Server.HttpsCertFile!,
                             config.Server.HttpsCertPassword);
                     }
@@ -111,6 +111,8 @@ public class Startup
         app.UseStatusCodeExceptionHandler();
         app.UseApiExceptionHandler();
         app.MapControllers();
+        
+        DbContext.Configure();
         
         _logger.LogInformation("---------- Server Starting ----------");
         if (!DatabaseMigrator.MigrateDatabase(_logger))

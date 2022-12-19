@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 namespace DirectoryService.Core.Services;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-
 [ScopedDependency]
 public sealed class UserService
 {
@@ -65,9 +64,10 @@ public sealed class UserService
         {
             return await _userRepository.Retrieve(userId);
         }
+
         return await _userRepository.FindByUsername(needle.ToLower());
     }
-    
+
     /// <summary>
     /// Fetch a list of users relative to the requester session
     /// </summary>
@@ -75,15 +75,15 @@ public sealed class UserService
     {
         var session = await _sessionProvider.GetRequesterSession();
         if (session is null) throw new UnauthorisedApiException();
-        
-        if(!session.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
+
+        if (!session.AsAdmin || (page.Filter != null && page.Filter.Contains("connections")))
             page.Where.Add("connection", true);
-        
-        if(page.Filter != null && page.Filter.Contains("friends"))
+
+        if (page.Filter != null && page.Filter.Contains("friends"))
             page.Where.Add("friend", true);
-        
+
         var requestedBy = await _sessionProvider.GetRequesterSession();
-        var users = await _userRepository.ListRelativeUsers(requestedBy!.AccountId, page, true);
+        var users = await _userRepository.ListRelativeUsers(requestedBy!.UserId, page, true);
         var result = new List<UserSearchResultDto>();
         foreach (var user in users.Data!)
         {
@@ -134,7 +134,7 @@ public sealed class UserService
 
         if (await _userRepository.FindByUsername(registerUserDto.Username!.ToLower()) != null)
             throw new UsernameTakenApiException();
-        
+
         var auth = CryptographyService.GenerateAuth(registerUserDto.Password!);
 
         var role = UserRole.User;
@@ -160,7 +160,7 @@ public sealed class UserService
 
         var createdUser = await _userRepository.Create(newUser);
 
-       // Create default profile
+        // Create default profile
         await _userProfileRepository.Create(new UserProfile()
         {
             UserId = createdUser.Id,
@@ -168,37 +168,14 @@ public sealed class UserService
             ThumbnailImageUrl = "",
             TinyImageUrl = ""
         });
-        
-        // Create default connection and friend user groups
-        var connectionsGroup = await _userGroupRepository.Create(new UserGroup()
-        {
-            Name = "",
-            Description = registerUserDto.Username + "'s Connections",
-            Internal = true,
-            Rating = MaturityRating.Everyone,
-            OwnerUserId = createdUser.Id
-        });
-
-        var friendsGroup = await _userGroupRepository.Create(new UserGroup()
-        {
-            Name = "",
-            Description = registerUserDto.Username + "'s Friends",
-            Internal = true,
-            Rating = MaturityRating.Everyone,
-            OwnerUserId = createdUser.Id
-        });
-
-        createdUser.ConnectionGroup = connectionsGroup.Id;
-        createdUser.FriendsGroup = friendsGroup.Id;
-
-        await _userRepository.Update(createdUser);
 
         _logger.LogInformation("New user registration. Username: {username}, Email: {email}, Originating IP: {ip}",
-            registerUserDto.Username, registerUserDto.Email!.MaskEmail(), registerUserDto.OriginIp?.ToString() ?? "Unknown" );
+            registerUserDto.Username, registerUserDto.Email!.MaskEmail(),
+            registerUserDto.OriginIp?.ToString() ?? "Unknown");
 
         if (_configuration.Registration.RequireEmailVerification)
             await _userActivationService.SendUserActivationRequest(createdUser!);
-        
+
         return new UserRegisteredDto
         {
             AccountId = createdUser!.Id.ToString(),
@@ -207,13 +184,13 @@ public sealed class UserService
             AccountIsActive = createdUser.Activated
         };
     }
-    
+
     /// <summary>
     /// Attempt to login user
     /// </summary>
     public async Task<User> AuthenticateUser(string? username, string? password)
     {
-        if(username == null || password == null)
+        if (username == null || password == null)
             throw new InvalidCredentialsApiException();
 
         // Allow user to login with either username or email address
@@ -221,15 +198,15 @@ public sealed class UserService
         if (user == null)
         {
             user = await _userRepository.FindByEmail(username.ToLowerInvariant());
-                if(user == null)
-                    throw new InvalidCredentialsApiException();
+            if (user == null)
+                throw new InvalidCredentialsApiException();
         }
 
-        if(!CryptographyService.AuthenticatePassword(password, user.AuthHash!))
+        if (!CryptographyService.AuthenticatePassword(password, user.AuthHash!))
             throw new InvalidCredentialsApiException();
 
         if (user.Activated) return user;
-        
+
         await _userActivationService.SendUserActivationRequest(user);
         throw new UserNotVerifiedApiException();
     }

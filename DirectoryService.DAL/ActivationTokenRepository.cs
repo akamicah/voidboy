@@ -18,12 +18,12 @@ public class ActivationTokenRepository : BaseRepository<ActivationToken>, IActiv
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"INSERT INTO activationTokens (accountId, expires)
-                VALUES( @accountId, @expires )
+            @"INSERT INTO activationTokens (userId, expires)
+                VALUES( @userId, @expires )
                 RETURNING id;",
             new
             {
-                entity.AccountId,
+                entity.UserId,
                 entity.Expires,
             });
 

@@ -37,9 +37,9 @@ public class UserActivationService
     public async Task ReceiveUserActivationResponse(Guid accountId, Guid verificationToken)
     {
         var token = await _activationTokenRepository.Retrieve(verificationToken);
-        if (token is null || token.AccountId != accountId) throw new InvalidTokenApiException();
+        if (token is null || token.UserId != accountId) throw new InvalidTokenApiException();
         
-        if(token.AccountId != accountId) throw new InvalidTokenApiException();
+        if(token.UserId != accountId) throw new InvalidTokenApiException();
 
         var user = await _userRepository.Retrieve(accountId);
         
@@ -61,7 +61,7 @@ public class UserActivationService
         {
             var activationToken = await _activationTokenRepository.Create(new ActivationToken()
             {
-                AccountId = user.Id,
+                UserId = user.Id,
                 Expires = DateTime.Now.AddMinutes(_configuration.Registration.EmailVerificationTimeoutMinutes)
             });
 
@@ -70,7 +70,7 @@ public class UserActivationService
             var email = new QueuedEmail()
             {
                 Type = EmailType.ActivationEmail,
-                AccountId = user.Id,
+                UserId = user.Id,
                 Model = JsonConvert.SerializeObject(new 
                 {
                     Subject = "Activate your Account",

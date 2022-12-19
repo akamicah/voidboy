@@ -12,12 +12,15 @@ public class SessionTokenService
 {
     private readonly IActivationTokenRepository _activationTokenRepository;
     private readonly ISessionTokenRepository _sessionTokenRepository;
+    private readonly ISessionProvider _sessionProvider;
 
     public SessionTokenService(IActivationTokenRepository activationTokenRepository,
-        ISessionTokenRepository sessionTokenRepository)
+        ISessionTokenRepository sessionTokenRepository,
+        ISessionProvider sessionProvider)
     {
         _activationTokenRepository = activationTokenRepository;
         _sessionTokenRepository = sessionTokenRepository;
+        _sessionProvider = sessionProvider;
     }
 
     /// <summary>
@@ -30,11 +33,17 @@ public class SessionTokenService
     }
 
     /// <summary>
-    /// List all session tokens for account
+    /// List all session tokens for user
     /// </summary>
-    public async Task<PaginatedResult<SessionToken>> ListAccountTokens(Guid account, PaginatedRequest page)
+    public async Task<PaginatedResult<SessionToken>> ListUserTokens(Guid userId, PaginatedRequest page)
     {
-        page.Where.Add("accountId", account);
+        var session = await _sessionProvider.GetRequesterSession();
+        
+        if(session is null) throw new UnauthorisedApiException();
+        if (session.UserId != userId && !session.AsAdmin) throw new UnauthorisedApiException();
+        
+        page.Where.Add("accountId", userId);
+        page.OrderBy = "createdAt";
         var result = await _sessionTokenRepository.List(page);
         return result;
     }
@@ -42,14 +51,19 @@ public class SessionTokenService
     /// <summary>
     /// Request to revoke a token for a user
     /// </summary>
-    public async Task RevokeAccountToken(Guid account, Guid token)
+    public async Task RevokeUserToken(Guid userId, Guid token)
     {
+        var session = await _sessionProvider.GetRequesterSession();
+        
+        if(session is null) throw new UnauthorisedApiException();
+        if (session.UserId != userId && !session.AsAdmin) throw new UnauthorisedApiException();
+        
         var tokenEntity = await _sessionTokenRepository.Retrieve(token);
 
         if (tokenEntity == null)
             throw new InvalidTokenApiException();
         
-        if(tokenEntity.AccountId != account)
+        if(tokenEntity.UserId != userId)
             throw new InvalidTokenApiException();
 
         await _sessionTokenRepository.Delete(token);

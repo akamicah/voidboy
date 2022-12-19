@@ -75,7 +75,7 @@ public abstract class V1ApiController : ControllerBase
         if(callAsAdmin && session.Role != UserRole.Admin)
             throw new UnauthorisedApiException();
         
-        if(session.AccountId != userId && !callAsAdmin)
+        if(session.UserId != userId && !callAsAdmin)
             throw new UnauthorisedApiException();
     }
 
