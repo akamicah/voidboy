@@ -6,14 +6,13 @@ CREATE TABLE domains
     name             TEXT                                                                   NOT NULL,
     description      TEXT                                         DEFAULT '',
     contactInfo      TEXT                                         DEFAULT '',
-    hostNames        TEXT[]                                       DEFAULT NULL,
-    thumbnailUrl     TEXT                                         DEFAULT '',
-    images           TEXT[]                                       DEFAULT NULL,
+    thumbnailUrl     TEXT                                         DEFAULT ''                NOT NULL,
+    imageUrls        TEXT[]                                       DEFAULT NULL,
     maturity         SMALLINT                                     DEFAULT 0,
     visibility       SMALLINT                                     DEFAULT 1                 NOT NULL,
     publicKey        TEXT                                         DEFAULT NULL,
-    apiKey           UUID                                         DEFAULT NULL,
-    sponsorUserId    UUID REFERENCES users (id) ON DELETE CASCADE DEFAULT NULL,
+    sessionToken     UUID REFERENCES sessionTokens (id)           DEFAULT NULL,
+    ownerUserId      UUID REFERENCES users (id) ON DELETE CASCADE DEFAULT NULL,
     iceServerAddress TEXT                                         DEFAULT NULL,
     version          TEXT                                         DEFAULT NULL,
     protocol         TEXT                                         DEFAULT NULL,
@@ -21,14 +20,13 @@ CREATE TABLE domains
     networkPort      INT                                          DEFAULT 0,
     networkingMode   SMALLINT                                     DEFAULT 0,
     restricted       BOOL                                         DEFAULT FALSE,
-    numUsers         INT                                          DEFAULT 0,
-    anonUsers        INT                                          DEFAULT 0,
     capacity         INT                                          DEFAULT 0,
     restriction      SMALLINT                                     DEFAULT 1,
     tags             TEXT[]                                       DEFAULT NULL,
     creatorIp        TEXT                                         DEFAULT NULL,
     lastHeartbeat    TIMESTAMP                                    DEFAULT NULL,
-    lastSenderKey    TEXT                                         DEFAULT ''
+    anonCount        INT                                          DEFAULT 0,
+    userCount        INT                                          DEFAULT 0
 );
 
 CREATE TRIGGER domains_updated_at

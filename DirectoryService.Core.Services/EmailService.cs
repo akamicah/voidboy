@@ -29,7 +29,7 @@ public class EmailService : IEmailService
         _logger = logger;
         _emailQueueEntityRepository = emailQueueEntityRepository;
         _fluentEmail = fluentEmail;
-        _config = ServicesConfigContainer.Config;
+        _config = ServiceConfigurationContainer.Config;
         _userRepository = userRepository;
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         _templateDirectory = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "templates/email/");

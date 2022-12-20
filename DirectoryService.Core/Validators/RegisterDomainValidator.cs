@@ -10,7 +10,7 @@ public class RegisterDomainValidator : AbstractValidator<RegisterDomainDto>
 {
     public RegisterDomainValidator()
     {
-        var config = ServicesConfigContainer.Config.DirectoryService;
+        var config = ServiceConfigurationContainer.Config.DirectoryService;
         var profanityFilter = new ProfanityFilter.ProfanityFilter();
         RuleFor(m => m.Name).NotEmpty().WithMessage("{PropertyName} not provided.")
             .MinimumLength(config.MinDomainNameLength).WithMessage("{PropertyName} must be a minimum of " + config.MinDomainNameLength + " characters")

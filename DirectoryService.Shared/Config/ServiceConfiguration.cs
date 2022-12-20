@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace DirectoryService.Shared.Config;
 
-public static class ServicesConfigContainer
+public static class ServiceConfigurationContainer
 {
     public static ServiceConfiguration Config { get; set; } = new ServiceConfiguration();
 }

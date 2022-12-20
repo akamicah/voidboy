@@ -26,7 +26,7 @@ public sealed class OAuthService
         _logger = logger;
         _userService = userService;
         _sessionTokenRepository = sessionTokenRepository;
-        _configuration = ServicesConfigContainer.Config;
+        _configuration = ServiceConfigurationContainer.Config;
     }
     
     /// <summary>

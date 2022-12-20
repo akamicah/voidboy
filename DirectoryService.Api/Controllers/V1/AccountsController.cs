@@ -30,7 +30,7 @@ public sealed class AccountsController : V1ApiController
         SessionTokenService sessionTokenService,
         UserService userService)
     {
-        _configuration = ServicesConfigContainer.Config;
+        _configuration = ServiceConfigurationContainer.Config;
         _userActivationService = userActivationService;
         _sessionTokenService = sessionTokenService;
         _userService = userService;

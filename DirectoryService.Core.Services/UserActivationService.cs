@@ -27,7 +27,7 @@ public class UserActivationService
         _logger = logger;
         _emailService = emailService;
         _activationTokenRepository = activationTokenRepository;
-        _configuration = ServicesConfigContainer.Config;
+        _configuration = ServiceConfigurationContainer.Config;
         _userRepository = userRepository;
     }
 

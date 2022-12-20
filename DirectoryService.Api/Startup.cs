@@ -58,18 +58,18 @@ public class Startup
 
         SetupConfiguration();
 
-        var config = ServicesConfigContainer.Config;
+        var config = ServiceConfigurationContainer.Config;
         
         builder.Services.AddFluentEmail(
-                ServicesConfigContainer.Config.Smtp.SenderEmail,
-                ServicesConfigContainer.Config.Smtp.SenderName
+                ServiceConfigurationContainer.Config.Smtp.SenderEmail,
+                ServiceConfigurationContainer.Config.Smtp.SenderName
             )
             .AddLiquidRenderer()
             .AddSmtpSender(
-                ServicesConfigContainer.Config.Smtp.Host ?? "localhost",
-                ServicesConfigContainer.Config.Smtp.Port,
-                ServicesConfigContainer.Config.Smtp.Username ?? "",
-                ServicesConfigContainer.Config.Smtp.Password ?? "");
+                ServiceConfigurationContainer.Config.Smtp.Host ?? "localhost",
+                ServiceConfigurationContainer.Config.Smtp.Port,
+                ServiceConfigurationContainer.Config.Smtp.Username ?? "",
+                ServiceConfigurationContainer.Config.Smtp.Password ?? "");
 
         // Setup Kestrel with http/https options provided in configuration
         builder.WebHost.UseKestrel((hostingContext, options) =>
@@ -139,9 +139,9 @@ public class Startup
         var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
         JobManager.Initialize(new JobRegistry(serviceScopeFactory));
         
-        _logger.LogInformation("Http Port: {port}", ServicesConfigContainer.Config.Server.HttpPort);
-        if(ServicesConfigContainer.Config.Server.UseHttps)
-            _logger.LogInformation("Https Port: {port}", ServicesConfigContainer.Config.Server.HttpsPort);
+        _logger.LogInformation("Http Port: {port}", ServiceConfigurationContainer.Config.Server.HttpPort);
+        if(ServiceConfigurationContainer.Config.Server.UseHttps)
+            _logger.LogInformation("Https Port: {port}", ServiceConfigurationContainer.Config.Server.HttpsPort);
         _logger.LogInformation("Running Server");
         app.Run();
     }
@@ -155,7 +155,7 @@ public class Startup
         using var r = new StreamReader("./config/serviceConfig.json");
         var json = r.ReadToEnd();
         
-        ServicesConfigContainer.Config = JsonConvert.DeserializeObject<ServiceConfiguration>(json)!;
+        ServiceConfigurationContainer.Config = JsonConvert.DeserializeObject<ServiceConfiguration>(json)!;
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public class Startup
     private void ConfigureForwardHeaders(IApplicationBuilder app)
     {
         
-        if (ServicesConfigContainer.Config.Server.KnownProxies!.Count == 0)
+        if (ServiceConfigurationContainer.Config.Server.KnownProxies!.Count == 0)
             return;
 
         _logger!.LogInformation("Configuring Forwarded Headers");
@@ -176,7 +176,7 @@ public class Startup
             RequireHeaderSymmetry = false,
             ForwardLimit = null,
         };
-        foreach (var proxy in ServicesConfigContainer.Config.Server.KnownProxies)
+        foreach (var proxy in ServiceConfigurationContainer.Config.Server.KnownProxies)
         {
             opts.KnownProxies.Add(IPAddress.Parse(proxy));
         }

@@ -18,7 +18,7 @@ public class ServerInfoController : ControllerBase
 
     public ServerInfoController()
     {
-        _configuration = ServicesConfigContainer.Config;
+        _configuration = ServiceConfigurationContainer.Config;
     }
 
     [HttpGet("metaverse_info")]

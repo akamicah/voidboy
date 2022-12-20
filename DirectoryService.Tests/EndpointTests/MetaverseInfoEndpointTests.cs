@@ -14,7 +14,7 @@ public class MetaverseInfoEndpointTests : TestBase
     public void Setup()
     {
         TestSetup();
-        _config = ServicesConfigContainer.Config;
+        _config = ServiceConfigurationContainer.Config;
     }
 
     [Test]

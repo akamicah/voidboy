@@ -24,7 +24,7 @@ public class UserServiceTests : TestBase
         var emailService = _factory!.Services.GetRequiredService<IEmailService>();
 
         // We want an email to be sent
-        ServicesConfigContainer.Config.Registration.RequireEmailVerification = true;
+        ServiceConfigurationContainer.Config.Registration.RequireEmailVerification = true;
         
         var user = await userService.RegisterUser(new RegisterUserDto()
         {

@@ -12,7 +12,7 @@ public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
 {
     public RegisterUserValidator()
     {
-        var config = ServicesConfigContainer.Config.Registration;
+        var config = ServiceConfigurationContainer.Config.Registration;
         var profanityFilter = new ProfanityFilter.ProfanityFilter();
         RuleFor(m => m.Username).NotEmpty().WithMessage("{PropertyName} not provided.")
             .MinimumLength(config.MinUsernameLength).WithMessage("{PropertyName} must be a minimum of " + config.MinUsernameLength + " characters")

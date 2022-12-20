@@ -38,7 +38,7 @@ public sealed class UserService
         _logger = logger;
         _registerUserValidator = registerUserValidator;
         _userRepository = userRepository;
-        _configuration = ServicesConfigContainer.Config;
+        _configuration = ServiceConfigurationContainer.Config;
         _sessionProvider = sessionProvider;
         _userActivationService = userActivationService;
         _userProfileRepository = userProfileRepository;

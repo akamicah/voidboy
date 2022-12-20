@@ -16,7 +16,7 @@ public class GetProjectAssemblies
             .Append(Assembly.GetAssembly(typeof(UserService)))
             .Append(Assembly.GetAssembly(typeof(DatabaseMigrator)))
             .Append(Assembly.GetAssembly(typeof(RegisterUserValidator)))
-            .Append(Assembly.GetAssembly(typeof(ServicesConfigContainer)));
+            .Append(Assembly.GetAssembly(typeof(ServiceConfigurationContainer)));
         return assemblies;
     }
 }

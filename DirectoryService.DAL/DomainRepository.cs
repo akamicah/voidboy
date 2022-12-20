@@ -18,22 +18,21 @@ public class DomainRepository : BaseRepository<Domain>, IDomainRepository
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"INSERT INTO domains (name, description, contactInfo, hostNames, thumbnailUrl, images, maturity, visibility, publicKey, apiKey, sponsorUserId, iceServerAddress, version, protocol, networkAddress, networkPort, networkingMode, restricted, numUsers, anonUsers, capacity, restriction, tags, creatorIp, lastHeartBeat, lastSenderKey) 
-                VALUES( @name, @description, @contactInfo, @hostNames, @thumbnailUrl, @images, @maturity, @visibility, @publicKey, @apiKey, @sponsorUserId, @iceServerAddress, @version, @protocol, @networkAddress, @networkPort, @networkingMode, @restricted, @numUsers, @anonUsers, @capacity, @restriction, @tags, @creatorIp, @lastHeartBeat, @lastSenderKey)
+            @"INSERT INTO domains (name, description, contactInfo, thumbnailUrl, imageUrls, maturity, visibility, publicKey, sessionToken, ownerUserId, iceServerAddress, version, protocol, networkAddress, networkPort, networkingMode, restricted, userCount, anonCount, capacity, restriction, tags, creatorIp, lastHeartBeat) 
+                VALUES( @name, @description, @contactInfo, @thumbnailUrl, @ImageUrls, @maturity, @visibility, @publicKey, @sessionToken, @ownerUserId, @iceServerAddress, @version, @protocol, @networkAddress, @networkPort, @networkingMode, @restricted, @userCount, @anonCount, @capacity, @restriction, @tags, @creatorIp, @lastHeartBeat)
                 RETURNING id;",
             new
             {
                 entity.Name,
                 entity.Description,
                 entity.ContactInfo,
-                entity.HostNames,
                 entity.ThumbnailUrl,
-                entity.Images,
+                entity.ImageUrls,
                 entity.Maturity,
                 entity.Visibility,
                 entity.PublicKey,
-                entity.ApiKey,
-                entity.SponsorUserId,
+                entity.SessionToken,
+                entity.OwnerUserId,
                 entity.IceServerAddress,
                 entity.Version,
                 entity.Protocol,
@@ -41,14 +40,13 @@ public class DomainRepository : BaseRepository<Domain>, IDomainRepository
                 entity.NetworkPort,
                 entity.NetworkingMode,
                 entity.Restricted,
-                entity.NumUsers,
-                entity.AnonUsers,
+                entity.UserCount,
+                entity.AnonCount,
                 entity.Capacity,
                 entity.Restriction,
                 entity.Tags,
                 entity.CreatorIp,
                 entity.LastHeartbeat,
-                entity.LastSenderKey
             });
 
         return await Retrieve(id);
