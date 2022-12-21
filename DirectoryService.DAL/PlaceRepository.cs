@@ -41,6 +41,19 @@ public class PlaceRepository : BaseRepository<Place>, IPlaceRepository
         return await Retrieve(id);
     }
 
+     public async Task<Place?> FindByName(string name)
+     {
+         using var con = await DbContext.CreateConnectionAsync();
+         name = name.ToLower();
+         var entity = await con.QueryFirstOrDefaultAsync<Place>(
+             @"SELECT * FROM places WHERE LOWER(name) = :name",
+             new
+             {
+                 name
+             });
+         return entity;
+     }
+
      public async Task<Place?> Update(Place entity)
     {
         throw new NotImplementedException();
