@@ -16,7 +16,7 @@ public class Domain : BaseEntity
     public Guid OwnerUserId { get; set; }
     public string? IceServerAddress { get; set; }
     public string? Version { get; set; }
-    public string? Protocol { get; set; }
+    public string? ProtocolVersion { get; set; }
     public string? NetworkAddress { get; set; }
     public int NetworkPort { get; set; }
     public NetworkingMode NetworkingMode { get; set; }
@@ -26,6 +26,7 @@ public class Domain : BaseEntity
     public List<string>? Tags { get; set; }
     public string? CreatorIp { get; set; }
     public DateTime LastHeartbeat { get; set; }
+    public bool Active { get; set; }
     public int UserCount { get; set; }
     public int AnonCount { get; set; }
 }

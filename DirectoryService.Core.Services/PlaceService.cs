@@ -99,4 +99,30 @@ public class PlaceService
 
         return placeEntity;
     }
+
+    public async Task DeletePlace(Guid placeId)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null ) throw new UnauthorisedApiException();
+
+        var place = await _placeRepository.Retrieve(placeId);
+        
+        if (place is null) throw new PlaceNotFoundApiException();
+
+        var domain = await _domainRepository.Retrieve(place.DomainId);
+
+        if (domain is null)
+        {
+            _logger.LogWarning("Place {placeName}'s parent domain no longer exists! Deleting place.", place.Name);
+            await _placeRepository.Delete(placeId);
+            await _sessionTokenRepository.Delete(place.SessionToken);
+            return;
+        }
+        
+        if (session.UserId != domain.OwnerUserId && !session.AsAdmin)
+            throw new UnauthorisedApiException();
+        
+        await _placeRepository.Delete(placeId);
+        await _sessionTokenRepository.Delete(place.SessionToken);
+    }
 }

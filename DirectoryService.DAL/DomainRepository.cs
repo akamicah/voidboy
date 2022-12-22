@@ -35,7 +35,7 @@ public class DomainRepository : BaseRepository<Domain>, IDomainRepository
                 entity.OwnerUserId,
                 entity.IceServerAddress,
                 entity.Version,
-                entity.Protocol,
+                Protocol = entity.ProtocolVersion,
                 entity.NetworkAddress,
                 entity.NetworkPort,
                 entity.NetworkingMode,

@@ -1,5 +1,7 @@
 using DirectoryService.Api.Attributes;
+using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
+using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +12,13 @@ namespace DirectoryService.Api.Controllers.V1;
 [ApiController]
 public sealed class PlacesController : V1ApiController
 {
+    private readonly PlaceService _placeService;
+
+    public PlacesController(PlaceService placeService)
+    {
+        _placeService = placeService;
+    }
+    
     /// <summary>
     /// Retrieve a list of places
     /// </summary>
@@ -26,10 +35,12 @@ public sealed class PlacesController : V1ApiController
     /// </summary>
     [HttpPost]
     [Authorise]
-    public async Task<IActionResult> AddPlace()
+    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceRootModel registerPlaceModel)
     {
-        //TODO
-        throw new NotImplementedException();
+        var place = await _placeService.RegisterNewPlace(registerPlaceModel.Place.ToDto());
+        //TODO: Return PlaceInfo
+
+        return Success();
     }
 
     /// <summary>
@@ -39,8 +50,8 @@ public sealed class PlacesController : V1ApiController
     [Authorise]
     public async Task<IActionResult> DeletePlace(Guid placeId)
     {
-        //TODO
-        throw new NotImplementedException();
+        await _placeService.DeletePlace(placeId);
+        return Success();
     }
 
     /// <summary>

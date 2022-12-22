@@ -1,6 +1,6 @@
 using DirectoryService.Api.Attributes;
+using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
-using DirectoryService.Api.Models;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
@@ -14,12 +14,15 @@ namespace DirectoryService.Api.Controllers.V1;
 public sealed class UserController : V1ApiController
 {
     private readonly UserService _userService;
+    private readonly PlaceService _placeService;
 
-    public UserController(UserService userService)
+    public UserController(UserService userService,
+        PlaceService placeService)
     {
         _userService = userService;
+        _placeService = placeService;
     }
-
+    
     /// <summary>
     /// Get requester owned places
     /// </summary>
@@ -53,16 +56,29 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
+    
+    /// <summary>
+    /// Register a new place
+    /// </summary>
+    [HttpPost("places")]
+    [Authorise]
+    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceRootModel registerPlaceModel)
+    {
+        var place = await _placeService.RegisterNewPlace(registerPlaceModel.Place.ToDto());
+        //TODO: Return PlaceInfo
+
+        return Success();
+    }
 
     /// <summary>
     /// Delete owned place
     /// </summary>
     [HttpDelete("places/{placeId:guid}")]
     [Authorise]
-    public async Task<IActionResult> DeleteUserPlace(Guid placeId)
+    public async Task<IActionResult> DeletePlace(Guid placeId)
     {
-        //TODO
-        throw new NotImplementedException();
+        await _placeService.DeletePlace(placeId);
+        return Success();
     }
 
     /// <summary>
@@ -108,7 +124,7 @@ public sealed class UserController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         page.Where.Add("connection", true);
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new UserListModel(result), result);
+        return Success(new V1UserListModel(result), result);
     }
 
     /// <summary>
@@ -143,18 +159,9 @@ public sealed class UserController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         page.Where.Add("friend", true);
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new UserFriendsModel(result));
+        return Success(new V1UserFriendsModel(result));
     }
-    
-    private class UserFriendsModel
-    {
-        public UserFriendsModel(PaginatedResult<UserSearchResultDto> result)
-        {
-            Friends = result.Data?.Select(x => x.Username!).ToList() ?? new List<string>();
-        }
-        public List<string> Friends { get; set; }
-    }
-    
+
     /// <summary>
     /// Upgrade a requester connection to friend
     /// </summary>

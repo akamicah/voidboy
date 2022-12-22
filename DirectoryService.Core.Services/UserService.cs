@@ -68,6 +68,11 @@ public sealed class UserService
         return await _userRepository.FindByUsername(needle.ToLower());
     }
 
+    public async Task<List<string>> ConvertUserIdsToUsernames(List<Guid> userIds)
+    {
+        return await _userRepository.UserIdsToUsernames(userIds);
+    }
+    
     /// <summary>
     /// Fetch a list of users relative to the requester session
     /// </summary>

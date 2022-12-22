@@ -151,4 +151,17 @@ LEFT JOIN (SELECT CASE WHEN ugm.userid IS NULL THEN FALSE ELSE TRUE END AS isFri
 
             return await QueryDynamic(sqlTemplate, "relativeUsers", page, dynamicParameters);
     }
+
+    public async Task<List<string>> UserIdsToUsernames(List<Guid> userIds)
+    {
+        using var con = await DbContext.CreateConnectionAsync();
+        var usernames = await con.QueryAsync<string>(
+            @"SELECT username FROM users WHERE id = @userIds",
+            new
+            {
+                userIds
+            });
+
+        return usernames.ToList();
+    }
 }

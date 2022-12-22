@@ -15,7 +15,7 @@ CREATE TABLE domains
     ownerUserId      UUID REFERENCES users (id) ON DELETE CASCADE DEFAULT NULL,
     iceServerAddress TEXT                                         DEFAULT NULL,
     version          TEXT                                         DEFAULT NULL,
-    protocol         TEXT                                         DEFAULT NULL,
+    protocolVersion  TEXT                                         DEFAULT NULL,
     networkAddress   TEXT                                         DEFAULT NULL,
     networkPort      INT                                          DEFAULT 0,
     networkingMode   SMALLINT                                     DEFAULT 0,
@@ -25,6 +25,7 @@ CREATE TABLE domains
     tags             TEXT[]                                       DEFAULT NULL,
     creatorIp        TEXT                                         DEFAULT NULL,
     lastHeartbeat    TIMESTAMP                                    DEFAULT NULL,
+    active           BOOLEAN                                      DEFAULT TRUE,
     anonCount        INT                                          DEFAULT 0,
     userCount        INT                                          DEFAULT 0
 );

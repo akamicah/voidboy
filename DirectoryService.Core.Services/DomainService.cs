@@ -43,7 +43,7 @@ public class DomainService
         _placeService = placeService;
     }
 
-    public async Task<Domain> RegisterNewDomain(RegisterDomainDto registerDomainDto, bool createPlace = true)
+    public async Task<RegisteredDomainDto> RegisterNewDomain(RegisterDomainDto registerDomainDto, bool createPlace = true)
     {
         var session = await _sessionProvider.GetRequesterSession();
         if (session is null ) throw new UnauthorisedApiException();
@@ -78,22 +78,48 @@ public class DomainService
             LastHeartbeat = DateTime.Now
         };
 
-        var domainEntity = await _domainRepository.Create(newDomain);
+        var domain = await _domainRepository.Create(newDomain);
 
-        await _domainManagerRepository.Add(domainEntity.Id, session.UserId);
+        await _domainManagerRepository.Add(domain.Id, session.UserId);
 
         if (!createPlace)
-            return domainEntity;
+            return new RegisteredDomainDto()
+            {
+                RegisteredDomain = domain,
+                RegisteredPlace = null
+            };
         
-        await _placeService.RegisterNewPlace(new RegisterPlaceDto()
+        var place = await _placeService.RegisterNewPlace(new RegisterPlaceDto()
         {
             CreatorIp = registerDomainDto.OriginIp ?? IPAddress.Any,
-            Name = domainEntity.Name,
-            Description = "A place in " + domainEntity.Name,
-            DomainId = domainEntity.Id,
+            Name = domain.Name,
+            Description = "A place in " + domain.Name,
+            DomainId = domain.Id,
             Path = "/0,0,0/0,0,0,1"
         });
         
-        return newDomain;
-    } 
+        return new RegisteredDomainDto()
+        {
+            RegisteredDomain = domain,
+            RegisteredPlace = place
+        };
+    }
+
+    public async Task<List<User>> GetDomainManagers(Guid domainId)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null ) throw new UnauthorisedApiException();
+        
+        var domain = await _domainRepository.Retrieve(domainId);
+
+        if (domain is null)
+            throw new DomainNotFoundApiException();
+
+        if (session.UserId != domain.OwnerUserId && !session.AsAdmin)
+            throw new UnauthorisedApiException();
+
+        var managers = await _domainManagerRepository.List(domainId, PaginatedRequest.All());
+
+        return managers.Data!.ToList();
+    }
 }

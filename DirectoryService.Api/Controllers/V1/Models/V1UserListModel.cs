@@ -1,11 +1,11 @@
 using DirectoryService.Core.Dto;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Api.Models;
+namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class UserListModel
+public class V1UserListModel
 {
-    public UserListModel(PaginatedResult<UserSearchResultDto> result)
+    public V1UserListModel(PaginatedResult<UserSearchResultDto> result)
     {
         Users = result.Data!;
     }

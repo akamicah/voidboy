@@ -49,7 +49,7 @@ public class ApiExceptionMiddleware
         context.Response.StatusCode = exception.ApiStatusCode();
         await context.Response.WriteAsJsonAsync(new
         {
-            Status = "fail",
+            Status = "failure",
             Error = exception.ApiErrorCode(),
             Message = exception.ApiErrorMessage()
         });
@@ -64,7 +64,7 @@ public class ApiExceptionMiddleware
         context.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
         await context.Response.WriteAsJsonAsync(new
         {
-            Status = "fail",
+            Status = "failure",
             Error = "ValidationError",
             Message = exception.Errors.First().ErrorMessage
         });
@@ -80,7 +80,7 @@ public class ApiExceptionMiddleware
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         await context.Response.WriteAsJsonAsync(new
         {
-            Status = "fail",
+            Status = "failure",
             Error = "Unknown",
             Message = "Something went wrong. Try again later."
         });

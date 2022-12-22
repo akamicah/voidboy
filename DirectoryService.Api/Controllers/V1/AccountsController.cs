@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 using DirectoryService.Api.Attributes;
+using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
-using DirectoryService.Core.Entities;
 using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
@@ -131,71 +131,9 @@ public sealed class AccountsController : V1ApiController
         var page = PaginatedRequest();
 
         var result = await _sessionTokenService.ListUserTokens(user.Id, page);
-        return new JsonResult(result.Data is not null ? new UserTokenListModel(result.Data) : new UserTokenListModel());
+        return new JsonResult(result.Data is not null ? new V1UserTokenListModel(result.Data) : new V1UserTokenListModel());
     }
 
-    /// <summary>
-    /// Model for V1 of the API
-    /// </summary>
-    private class UserTokenModel
-    {
-        [JsonPropertyName("id")] 
-        public Guid Id { get; set; }
-        
-        [JsonPropertyName("tokenid")]
-        public Guid TokenId { get; set; }
-        
-        [JsonPropertyName("token")]
-        public Guid Token { get; set; }
-        
-        [JsonPropertyName("refresh_token")]
-        public Guid RefreshToken { get; set; }
-        
-        [JsonPropertyName("token_creation_time")]
-        public DateTime CreatedOn { get; set; }
-        
-        [JsonPropertyName("token_expiration_time")]
-        public DateTime ExpiresOn { get; set; }
-        
-        [JsonPropertyName("scope")]
-        public IEnumerable<string>? Scope { get; set; }
-    }
-    
-    /// <summary>
-    /// Model for V1 of the API
-    /// </summary>
-    private class UserTokenListModel
-    {
-        public UserTokenListModel()
-        {
-            Tokens = new List<UserTokenModel>();
-        }
-
-        public UserTokenListModel(IEnumerable<SessionToken> sessionTokens)
-        {
-            Tokens = new List<UserTokenModel>();
-            foreach (var sessionToken in sessionTokens)
-            {
-                Tokens.Add(new UserTokenModel()
-                {
-                    CreatedOn = sessionToken.CreatedAt,
-                    ExpiresOn = sessionToken.Expires,
-                    Id = sessionToken.Id,
-                    RefreshToken = sessionToken.RefreshToken,
-                    Token = sessionToken.Id,
-                    TokenId = sessionToken.Id,
-                    Scope = new []
-                    {
-                        sessionToken.Scope.ToScopeString()
-                    }
-                });
-            }
-        }
-        
-        [JsonPropertyName("tokens")]
-        public List<UserTokenModel> Tokens { get; set; }
-    }
-    
     /// <summary>
     /// Delete an account's token
     /// </summary>
@@ -211,17 +149,17 @@ public sealed class AccountsController : V1ApiController
         
         return Success();
     }
-    
+
     /// <summary>
     /// Email verification endpoint
     /// </summary>
     [HttpGet("verify/email")]
     [AllowAnonymous]
-    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
+    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] V1EmailVerificationModel verification)
     {
         if (!Guid.TryParse(verification.AccountId, out var accountId))
             return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
-        
+
         if (!Guid.TryParse(verification.VerificationToken, out var verificationToken))
             return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
 
@@ -235,17 +173,4 @@ public sealed class AccountsController : V1ApiController
             return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
         }
     }
-
-    /// <summary>
-    /// Model for V1 of the API
-    /// </summary>
-    public class EmailVerificationModel
-    {
-        [FromQuery(Name = "a")]
-        public string? AccountId { get; set; }
-        
-        [FromQuery(Name = "v")]
-        public string? VerificationToken { get; set; }
-    }
-
 }

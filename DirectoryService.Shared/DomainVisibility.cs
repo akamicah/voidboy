@@ -9,7 +9,7 @@ public enum DomainVisibility
 
 public static class DomainVisibilityExtension
 {
-    public static string ToDomainRestrictionString(this DomainVisibility visibility)
+    public static string ToDomainVisibilityString(this DomainVisibility visibility)
     {
         return visibility switch
         {

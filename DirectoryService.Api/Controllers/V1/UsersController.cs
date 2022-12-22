@@ -1,7 +1,7 @@
 using System.Net;
 using DirectoryService.Api.Attributes;
+using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
-using DirectoryService.Api.Models;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
@@ -30,7 +30,7 @@ public sealed class UsersController : V1ApiController
     {
         var page = PaginatedRequest("username", true, "username");
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new UserListModel(result));
+        return Success(new V1UserListModel(result));
     }
 
     /// <summary>
@@ -48,10 +48,10 @@ public sealed class UsersController : V1ApiController
     /// <summary>
     /// Request to register a new user
     /// </summary>
-    /// <param name="registerUserModel"></param>
+    /// <param name="v1RegisterUserModel"></param>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] RegisterUserModel registerUserModel)
+    public async Task<IActionResult> Register([FromBody] V1RegisterUserModel registerUserModel)
     {
         if (registerUserModel.User == null)
             return Failure();
@@ -61,15 +61,6 @@ public sealed class UsersController : V1ApiController
         var response = await _userService.RegisterUser(registerUserModel.User);
         
         return Success(response);
-    }
-    
-    /// <summary>
-    /// Exists purely because V1 of the API has the registration fields in a 'user' field
-    /// </summary>
-    public class RegisterUserModel
-    {
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public RegisterUserDto? User { get; set; }
     }
 
     /// <summary>
