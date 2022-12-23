@@ -125,8 +125,8 @@ public sealed class DomainsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> DeleteDomain(Guid domainId)
     {
-        //TODO
-        throw new NotImplementedException();
+        await _domainService.DeleteDomain(domainId);
+        return Success();
     }
 
     /// <summary>

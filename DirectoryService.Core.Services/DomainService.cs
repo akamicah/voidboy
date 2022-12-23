@@ -105,6 +105,35 @@ public class DomainService
         };
     }
 
+    public async Task DeleteDomain(Guid domainId)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null ) throw new UnauthorisedApiException();
+        
+        var domain = await _domainRepository.Retrieve(domainId);
+        
+        if (domain is null)
+            throw new DomainNotFoundApiException();
+        
+        if (session.UserId != domain.OwnerUserId && !session.AsAdmin)
+            throw new UnauthorisedApiException();
+        
+        _logger.LogInformation("Deleting domain: {name}", domain.Name);
+        
+        // Get places belonging to domain and delete them
+        var page = PaginatedRequest.All();
+        page.Where.Add("domainId", domain.Id);
+        var places = await _placeService.List(page);
+        
+        foreach(var place in places.Data!)
+        {
+            await _placeService.DeletePlace(place.Id);
+        }
+
+        await _domainRepository.Delete(domain.Id);
+        await _sessionTokenRepository.Delete(domain.SessionToken);
+    }
+
     public async Task<List<User>> GetDomainManagers(Guid domainId)
     {
         var session = await _sessionProvider.GetRequesterSession();

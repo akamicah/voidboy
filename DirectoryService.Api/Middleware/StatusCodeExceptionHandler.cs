@@ -29,7 +29,7 @@ public class StatusCodeExceptionHandler
                     context.Response.ContentType = "text/json";
                     await context.Response.WriteAsJsonAsync(new
                     {
-                        Status = "fail",
+                        Status = "failure",
                         Error = "UnknownMethod"
                     });
                     break;
@@ -37,7 +37,7 @@ public class StatusCodeExceptionHandler
                     context.Response.ContentType = "text/json";
                     await context.Response.WriteAsJsonAsync(new
                     {
-                        Status = "fail",
+                        Status = "failure",
                         Error = "IllegalMethod",
                     });
                     break;
@@ -45,7 +45,7 @@ public class StatusCodeExceptionHandler
                     context.Response.ContentType = "text/json";
                     await context.Response.WriteAsJsonAsync(new
                     {
-                        Status = "fail",
+                        Status = "failure",
                         Error = "UnsupportedMediaType",
                     });
                     break;

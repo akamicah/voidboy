@@ -39,6 +39,11 @@ public class PlaceService
         _sessionTokenRepository = sessionTokenRepository;
         _serviceConfiguration = ServiceConfigurationContainer.Config;
     }
+    
+    public async Task<PaginatedResult<Place>> List(PaginatedRequest paginatedRequest)
+    {
+        return await _placeRepository.List(paginatedRequest);
+    }
 
     private async Task<string> GenerateUniquePlaceName(string requestedName)
     {
@@ -121,6 +126,8 @@ public class PlaceService
         
         if (session.UserId != domain.OwnerUserId && !session.AsAdmin)
             throw new UnauthorisedApiException();
+        
+        _logger.LogInformation("Deleting place {place} ", place.Name);
         
         await _placeRepository.Delete(placeId);
         await _sessionTokenRepository.Delete(place.SessionToken);
