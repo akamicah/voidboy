@@ -1,12 +1,9 @@
-using System.Globalization;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
+using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.Services;
-using DirectoryService.Shared;
-using DirectoryService.Shared.Extensions;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Api.Controllers.V1;
@@ -18,12 +15,15 @@ public sealed class DomainsController : V1ApiController
 {
 
     private readonly DomainService _domainService;
+    private readonly PlaceService _placeService;
 
-    public DomainsController(DomainService domainService)
+    public DomainsController(DomainService domainService,
+        PlaceService placeService)
     {
         _domainService = domainService;
+        _placeService = placeService;
     }
-    
+
     /// <summary>
     /// Fetch a list of domains
     /// </summary>
@@ -39,11 +39,16 @@ public sealed class DomainsController : V1ApiController
     /// Fetch information on provided domain
     /// </summary>
     [HttpGet("{domainId:guid}")]
-    [Authorise]
+    [AllowAnonymous]
     public async Task<IActionResult> GetDomain(Guid domainId)
     {
-        //TODO
-        throw new NotImplementedException();
+        var domain = await _domainService.FindById(domainId);
+        if (domain is null) throw new DomainNotFoundApiException();
+
+        return Success(new
+        {
+            Domain = new V1DomainInfoModel(domain)
+        });
     }
     
     /// <summary>
@@ -59,49 +64,8 @@ public sealed class DomainsController : V1ApiController
 
         var response = new
         {
-            Domain = new
-            {
-                Id = registeredDomain.RegisteredDomain.Id,
-                DomainId = registeredDomain.RegisteredDomain.Id,
-                Name = registeredDomain.RegisteredDomain.Name,
-                Visiblity = registeredDomain.RegisteredDomain.Visibility.ToDomainVisibilityString(),
-                Capacity = registeredDomain.RegisteredDomain.Capacity,
-                SponsorAccountId = registeredDomain.RegisteredDomain.OwnerUserId,
-                Label = registeredDomain.RegisteredDomain.Name,
-                NetworkAddress = registeredDomain.RegisteredDomain.NetworkAddress,
-                NetworkPort = registeredDomain.RegisteredDomain.NetworkPort,
-                IceServerAddress = registeredDomain.RegisteredDomain.IceServerAddress,
-                Version = registeredDomain.RegisteredDomain.Version,
-                ProtocolVersion = registeredDomain.RegisteredDomain.ProtocolVersion,
-                Active = registeredDomain.RegisteredDomain.Active,
-                TimeOfLastHeartbeat = registeredDomain.RegisteredDomain.LastHeartbeat.ToString(CultureInfo.InvariantCulture),
-                TimeOfLastHeartbeatS = registeredDomain.RegisteredDomain.LastHeartbeat.ToMilliSecondsTimestamp(),
-                NumUsers = registeredDomain.RegisteredDomain.AnonCount + registeredDomain.RegisteredDomain.UserCount,
-                ApiKey = registeredDomain.RegisteredDomain.SessionToken
-            },
-            Place = new
-            {
-                Id = registeredDomain.RegisteredPlace!.Id,
-                PlaceId = registeredDomain.RegisteredPlace.Id,
-                Name = registeredDomain.RegisteredPlace.Name,
-                DisplayName = registeredDomain.RegisteredPlace.Name,
-                Visibility = registeredDomain.RegisteredPlace.Visibility.ToDomainVisibilityString(),
-                Address = registeredDomain.RegisteredPlace.Path,
-                Path = registeredDomain.RegisteredPlace.Path,
-                Description = registeredDomain.RegisteredPlace.Description,
-                Maturity = registeredDomain.RegisteredPlace.Maturity.ToMaturityRatingString(),
-                Tags = registeredDomain.RegisteredPlace.Tags,
-                Managers = managers.Select(m => m.Username).ToList(),
-                Thumbnail = registeredDomain.RegisteredPlace.ThumbnailUrl,
-                Images = registeredDomain.RegisteredPlace.ImageUrls,
-                CurrentAttendance = registeredDomain.RegisteredPlace.Attendance,
-                CurrentImages = registeredDomain.RegisteredPlace.ImageUrls,
-                CurrentInfo = "{}",
-                CurrentLastUpdateTime = registeredDomain.RegisteredPlace.UpdatedAt?.ToString(CultureInfo.InvariantCulture),
-                CurrentLastUpdateTimeS = registeredDomain.RegisteredPlace.UpdatedAt?.ToMilliSecondsTimestamp(),
-                LastActivityUpdate = registeredDomain.RegisteredPlace.LastActivity.ToString(CultureInfo.InvariantCulture),
-                LastActivityUpdateS = registeredDomain.RegisteredPlace.LastActivity.ToMilliSecondsTimestamp()
-            }
+            Domain = new V1DomainInfoModel(registeredDomain.RegisteredDomain, true),
+            Place = new V1PlaceInfoSmallModel(registeredDomain.RegisteredPlace!, managers)
         };
         
         return Success(response);
@@ -114,8 +78,9 @@ public sealed class DomainsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> UpdateDomain(Guid domainId, [FromBody] UpdateDomainDto domainUpdate)
     {
-        //TODO
-        throw new NotImplementedException();
+        domainUpdate.DomainId = domainId;
+        await _domainService.UpdateDomain(domainUpdate);
+        return Success();
     }
     
     /// <summary>
@@ -183,9 +148,7 @@ public sealed class DomainsController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-
- 
-    
+   
     /// <summary>
     /// Register a temporary domain
     /// </summary>

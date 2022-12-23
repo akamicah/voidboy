@@ -2,7 +2,7 @@ CREATE TABLE places
 (
     id           UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID()           NOT NULL,
     createdAt    TIMESTAMP        DEFAULT CURRENT_TIMESTAMP           NOT NULL,
-    updatedAt    TIMESTAMP        DEFAULT NULL,
+    updatedAt    TIMESTAMP        DEFAULT CURRENT_TIMESTAMP           NOT NULL,
     name         TEXT                                                 NOT NULL,
     description  TEXT             DEFAULT ''                          NOT NULL,
     visibility   SMALLINT         DEFAULT 1                           NOT NULL,

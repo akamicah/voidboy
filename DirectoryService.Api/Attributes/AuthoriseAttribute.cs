@@ -12,7 +12,7 @@ namespace DirectoryService.Api.Attributes;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthoriseAttribute : Attribute, IAuthorizationFilter
 {
-    private readonly TokenScope? _tokenScope;
+    private readonly List<TokenScope>? _tokenScope;
     private readonly UserRole _userRole;
 
     public AuthoriseAttribute()
@@ -27,16 +27,16 @@ public class AuthoriseAttribute : Attribute, IAuthorizationFilter
         _tokenScope = null;
     }
     
-    public AuthoriseAttribute(TokenScope scope)
+    public AuthoriseAttribute(params TokenScope[] scope)
     {
         _userRole = UserRole.User;
-        _tokenScope = null;
+        _tokenScope = scope.ToList();
     }
     
-    public AuthoriseAttribute(UserRole role, TokenScope scope)
+    public AuthoriseAttribute(UserRole role, params TokenScope[] scope)
     {
         _userRole = role;
-        _tokenScope = scope;
+        _tokenScope = scope.ToList();
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class AuthoriseAttribute : Attribute, IAuthorizationFilter
         }
         else
         {
-            if (_tokenScope != null && session.Scope != _tokenScope)
+            if (_tokenScope != null &&  !_tokenScope.Contains(session.Scope))
             {
                 context.Result = unauthorised;
             }

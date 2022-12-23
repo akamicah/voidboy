@@ -4,6 +4,7 @@ public class UpdateDomainDto
 {
     public Guid DomainId { get; set; }
     public string? Name { get; set; }
+    public string? Visibility { get; set; }
     public string? Version { get; set; }
     public string? Protocol { get; set; }
     public string? NetworkAddress { get; set; }

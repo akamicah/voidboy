@@ -57,7 +57,7 @@ public class SessionTokenService
         
         if(session is null) throw new UnauthorisedApiException();
         if (session.UserId != userId && !session.AsAdmin) throw new UnauthorisedApiException();
-        
+
         var tokenEntity = await _sessionTokenRepository.Retrieve(token);
 
         if (tokenEntity == null)

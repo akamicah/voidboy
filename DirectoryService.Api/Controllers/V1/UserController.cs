@@ -62,7 +62,7 @@ public sealed class UserController : V1ApiController
     /// </summary>
     [HttpPost("places")]
     [Authorise]
-    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceRootModel registerPlaceModel)
+    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceModel registerPlaceModel)
     {
         var place = await _placeService.RegisterNewPlace(registerPlaceModel.Place.ToDto());
         //TODO: Return PlaceInfo
