@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using DirectoryService.Shared.Attributes;
+using DirectoryService.Shared.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Core.Services;
@@ -67,8 +68,7 @@ public class CryptographyService
             }
             else
             {
-                var spki = rsa.ExportSubjectPublicKeyInfo();
-                pem = Convert.ToBase64String(spki);
+                pem = rsa.ExportToPem(RsaPublicKeyFormat.SubjectPublicKeyInfo);
             }
             rsa.Clear();
             return pem;
@@ -79,5 +79,15 @@ public class CryptographyService
         }
 
         return "";
+    }
+
+    // Strip out header, footer and newlines from PEM RSA key
+    public static string SimplifyPemKey(string pemKey)
+    {
+        pemKey = pemKey.Replace("-----BEGIN PUBLIC KEY-----", "");
+        pemKey = pemKey.Replace("-----END PUBLIC KEY-----", "");
+        pemKey = pemKey.Replace("\r", "");
+        pemKey = pemKey.Replace("\n", "");
+        return pemKey;
     }
 }

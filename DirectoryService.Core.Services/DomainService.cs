@@ -8,6 +8,7 @@ using DirectoryService.Core.Validators;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Config;
+using DirectoryService.Shared.Extensions;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -26,6 +27,7 @@ public class DomainService
     private readonly PlaceService _placeService;
     private readonly UpdateDomainValidator _updateDomainValidator;
     private readonly UserService _userService;
+    private readonly CryptographyService _cryptographyService;
 
     public DomainService(ILogger<DomainService> logger,
         IDomainRepository domainRepository,
@@ -35,7 +37,8 @@ public class DomainService
         ISessionTokenRepository sessionTokenRepository,
         PlaceService placeService,
         UpdateDomainValidator updateDomainValidator,
-        UserService userService)
+        UserService userService,
+        CryptographyService cryptographyService)
     {
         _logger = logger;
         _domainRepository = domainRepository;
@@ -47,6 +50,7 @@ public class DomainService
         _placeService = placeService;
         _updateDomainValidator = updateDomainValidator;
         _userService = userService;
+        _cryptographyService = cryptographyService;
     }
 
     private static bool SessionValidForDomain(Domain domain, Session session)
@@ -237,7 +241,7 @@ public class DomainService
     /// <summary>
     /// Replace current domain managers with provided list
     /// </summary>
-    public async Task SetDomainManagers(Guid domainId, List<User> managers)
+    private async Task SetDomainManagers(Guid domainId, List<User> managers)
     {
         // Remove old managers
         var currentManagers = await _domainManagerRepository.List(domainId, PaginatedRequest.All());
@@ -247,5 +251,114 @@ public class DomainService
         {
             await _domainManagerRepository.Add(domainId, user.Id);
         }
+    }
+
+    /// <summary>
+    /// Retrieve a domain field
+    /// </summary>
+    public async Task<object?> GetDomainField(Guid domainId, string field)
+    {
+        var domain = await _domainRepository.Retrieve(domainId);
+        
+        if (domain is null)
+            throw new DomainNotFoundApiException();
+        
+        switch (field.ToLower())
+        {
+            case "domainid":
+                return domain.Id;
+            case "name":
+                return domain.Name;
+            case "visibility":
+                return domain.Visibility.ToDomainVisibilityString();
+            case "public_key":
+                return domain.PublicKey;
+            case "sponsor_account_id":
+                return domain.OwnerUserId;
+            case "version":
+                return domain.Version;
+            case "protocol":
+                return domain.ProtocolVersion;
+            case "network_address":
+                return domain.NetworkAddress;
+            case "automatic_networking":
+                return domain.NetworkingMode.ToNetworkingModeString();
+            case "num_users":
+                return domain.UserCount;
+            case "num_anon_users":
+                return domain.AnonCount;
+            case "restricted":
+                return domain.Restricted;
+            case "capacity":
+                return domain.Capacity;
+            case "description":
+                return domain.Description;
+            case "contact_info":
+                return domain.ContactInfo;
+            case "maturity":
+                return domain.Maturity.ToMaturityRatingString();
+            case "restriction":
+                return domain.Restriction.ToDomainRestrictionString();
+            case "managers":
+                var managers = await GetDomainManagers(domainId);
+                return managers.ToArray();
+            case "tags":
+                return domain.Tags?.ToArray();
+            case "thumbnail":
+                return domain.ThumbnailUrl;
+            case "images":
+                return domain.ImageUrls?.ToArray();
+            case "addr_of_first_contact":
+                return domain.CreatorIp;
+            case "when_domain_entry_created":
+                return domain.CreatedAt.ToUniversalIso8601();
+            case "when_domain_entry_created_s":
+                return domain.CreatedAt.ToMilliSecondsTimestamp();
+            case "time_of_last_heartbeat":
+                return domain.LastHeartbeat.ToUniversalIso8601();
+            case "time_of_last_heartbeat_s":
+                return domain.LastHeartbeat.ToMilliSecondsTimestamp();
+            case "last_sender_key": //TODO: Required?
+                return null;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Update the domain's public key. Expects key in PKCS1 DER (binary) form
+    /// </summary>
+    public async Task UpdatePublicKey(Guid domainId, Stream publicKey)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null ) throw new UnauthorisedApiException();
+        
+        var domain = await _domainRepository.Retrieve(domainId);
+        
+        if (domain is null)
+            throw new DomainNotFoundApiException();
+        
+        if (!SessionValidForDomain(domain, session)) throw new UnauthorisedApiException();
+        
+        var pemPublicKey = await _cryptographyService.ConvertPkcs1Key(publicKey.ToByteArray());
+
+        domain.PublicKey = pemPublicKey;
+        await _domainRepository.Update(domain);
+    }
+    
+    public async Task UpdateIceServerAddress(Guid domainId, string iceServerAddress)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null ) throw new UnauthorisedApiException();
+        
+        var domain = await _domainRepository.Retrieve(domainId);
+        
+        if (domain is null)
+            throw new DomainNotFoundApiException();
+        
+        if (!SessionValidForDomain(domain, session)) throw new UnauthorisedApiException();
+
+        domain.IceServerAddress = iceServerAddress;
+        await _domainRepository.Update(domain);
     }
 }

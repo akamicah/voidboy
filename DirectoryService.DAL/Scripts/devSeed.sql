@@ -28,3 +28,10 @@ INSERT INTO userGroupMembers(userGroupId, userId) VALUES
 ('a517237f-8457-4f87-a38b-de68c274ff24', '4115ea77-3c13-4a24-9a2e-701893ee0d61'),
 ('f2714eb7-e720-4597-b404-6c3f8250fde6', '6465b186-5fc9-46d2-842f-da8542ba9939');
                                                       
+-- Domains
+INSERT INTO sessionTokens (id, refreshtoken, userid, scope, expires) VALUES
+('594718e6-e707-4593-8a3a-66b331de5e13', '0ff5265b-b81d-404f-8c80-7a4629c5f2af', '6465b186-5fc9-46d2-842f-da8542ba9939', 2, '2047-01-01 14:02:25.262176'),
+('e1f9d2c4-8cd8-402b-b85a-97578f900101', '705fe2ee-a961-420e-8f6e-b26bdcab7f97', '6465b186-5fc9-46d2-842f-da8542ba9939', 3, '2047-01-01 14:02:25.471330');
+
+INSERT INTO domains (id, name, description, contactInfo, thumbnailUrl, imageUrls, maturity, visibility, publicKey, sessionToken, ownerUserId, iceServerAddress, version, protocolVersion, networkAddress, networkPort, networkingMode, restricted, capacity, restriction, tags, creatorIp, lastHeartbeat, active, anonCount, userCount) VALUES
+('384614a0-fb9f-4557-872e-129cc307de5c', 'TestDomain', null, null, '', '{}', 0, 1, null, '594718e6-e707-4593-8a3a-66b331de5e13', '6465b186-5fc9-46d2-842f-da8542ba9939', null, null, null, '127.0.0.1', 1234, 0, false, 0, 1, '{}', null, '2023-01-07 13:58:21.729021', true, 0, 0);

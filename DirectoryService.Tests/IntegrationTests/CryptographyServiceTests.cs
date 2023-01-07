@@ -61,12 +61,12 @@ public class CryptographyServiceTests : TestBase
         
         var publicKeyDer = await File.ReadAllBytesAsync("./TestData/public-key.der");
         var publicKeyPem = await File.ReadAllTextAsync("./TestData/public-key.pem");
-        
-        publicKeyPem = publicKeyPem.Replace("-----BEGIN PUBLIC KEY-----", "");
-        publicKeyPem = publicKeyPem.Replace("-----END PUBLIC KEY-----", "");
-        publicKeyPem = publicKeyPem.Replace("\n", "");
+
+        publicKeyPem = CryptographyService.SimplifyPemKey(publicKeyPem);
         
         var generatedPem = await cryptographyService.ConvertPkcs1Key(publicKeyDer);
+        
+        generatedPem = CryptographyService.SimplifyPemKey(generatedPem);
         
         Assert.That(generatedPem, Is.EqualTo(publicKeyPem));
     }

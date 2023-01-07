@@ -104,6 +104,6 @@ public class BaseRepository<T>
     {
         using var con = await DbContext.CreateConnectionAsync();
         var sql = $@"DELETE FROM {TableName} WHERE id = @id";
-        await con.ExecuteAsync(sql, entityIds.Select(e => e));
+        await con.ExecuteAsync(sql, entityIds);
     }
 }

@@ -15,13 +15,9 @@ public sealed class DomainsController : V1ApiController
 {
 
     private readonly DomainService _domainService;
-    private readonly PlaceService _placeService;
-
-    public DomainsController(DomainService domainService,
-        PlaceService placeService)
+    public DomainsController(DomainService domainService)
     {
         _domainService = domainService;
-        _placeService = placeService;
     }
 
     /// <summary>
@@ -98,11 +94,11 @@ public sealed class DomainsController : V1ApiController
     /// Fetch specific information about domain
     /// </summary>
     [HttpGet("{domainId:guid}/field/{fieldName}")]
-    [Authorise]
+    [AllowAnonymous]
     public async Task<IActionResult> GetDomainProperty(Guid domainId, string fieldName)
     {
-        //TODO
-        throw new NotImplementedException();
+        var value = await _domainService.GetDomainField(domainId, fieldName);
+        return Success(value ?? new {});
     }
     
     /// <summary>
@@ -123,10 +119,13 @@ public sealed class DomainsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> SetDomainIceServer(Guid domainId, [FromBody] V1UpdateIceServerModel updateIceServerModel)
     {
-        //TODO
-        throw new NotImplementedException();
+        if (updateIceServerModel.Domain.IceServerAddress is null)
+            return Failure();
+        
+        await _domainService.UpdateIceServerAddress(domainId, updateIceServerModel.Domain.IceServerAddress);
+        return Success();
     }
-    
+
     /// <summary>
     /// Get the public key of the domain
     /// </summary>
@@ -134,10 +133,14 @@ public sealed class DomainsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> GetPublicKey(Guid domainId)
     {
-        //TODO
-        throw new NotImplementedException();
+        var domain = await _domainService.FindById(domainId);
+        if (domain is null) throw new DomainNotFoundApiException();
+        return Success(new
+        {
+            PublicKey = domain.PublicKey != null ? CryptographyService.SimplifyPemKey(domain.PublicKey) : ""
+        });
     }
-    
+
     /// <summary>
     /// Update the public key of the domain
     /// </summary>
@@ -145,8 +148,12 @@ public sealed class DomainsController : V1ApiController
     [Authorise]
     public async Task<IActionResult> SetPublicKey(Guid domainId)
     {
-        //TODO
-        throw new NotImplementedException();
+        var cert = HttpContext.Request.Form.Files.GetFile("public_key");
+        if (cert is null)
+            throw new BaseApiException("FileMissing", "The file 'public_key' was not included.", 400);
+
+        await _domainService.UpdatePublicKey(domainId, cert.OpenReadStream());
+        return Success();
     }
    
     /// <summary>
