@@ -48,7 +48,7 @@ public sealed class AccountsController : V1ApiController
     }
     
     /// <summary>
-    /// Get account by account id
+    /// Get account by user reference (user id or username)
     /// </summary>
     [HttpGet("{accountReference}")]
     [Authorise]

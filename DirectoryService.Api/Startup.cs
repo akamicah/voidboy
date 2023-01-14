@@ -47,7 +47,7 @@ public class Startup
         var baseDir = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "logs/");
         
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .WriteTo.File(baseDir + "log.txt", rollingInterval: RollingInterval.Day)
@@ -152,6 +152,12 @@ public class Startup
     /// </summary>
     private static void SetupConfiguration()
     {
+        if (!File.Exists("./config/serviceConfig.json"))
+        {
+            Log.Error("Configuration file was not found. If using docker, be sure to mount the config directory containing the server configuration to '/app/config' i.e: docker run -v \"$(pwd)/DirectoryService.Api/config\":/app/config ...");
+            Environment.Exit(2);
+        }
+
         using var r = new StreamReader("./config/serviceConfig.json");
         var json = r.ReadToEnd();
         
