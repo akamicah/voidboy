@@ -64,6 +64,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
                 Rating = MaturityRating.Everyone
             });
 
+        entity.Id = id;
         entity.ConnectionGroup = connectionGroup;
         entity.FriendsGroup = friendsGroup;
         
