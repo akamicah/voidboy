@@ -8,6 +8,7 @@ public class UpdateDomainDto
     public string? Version { get; set; }
     public string? Protocol { get; set; }
     public string? NetworkAddress { get; set; }
+    public int? NetworkPort { get; set; }
     public bool? Restricted { get; set; }
     public int? Capacity { get; set; }
     public string? Description { get; set; }

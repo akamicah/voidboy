@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;

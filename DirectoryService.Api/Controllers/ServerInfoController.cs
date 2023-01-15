@@ -24,7 +24,7 @@ public class ServerInfoController : ControllerBase
     [HttpGet("metaverse_info")]
     [HttpGet("v1/metaverse_info")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetMetaverseInfo()
+    public IActionResult GetMetaverseInfo()
     {
         return new JsonResult(new MetaverseInfoModel()
         {

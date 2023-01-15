@@ -1,3 +1,5 @@
+using System.Net;
+using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
@@ -5,6 +7,7 @@ using DirectoryService.Core.Dto;
 using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 namespace DirectoryService.Api.Controllers.V1;
 
@@ -15,9 +18,12 @@ public sealed class DomainsController : V1ApiController
 {
 
     private readonly DomainService _domainService;
-    public DomainsController(DomainService domainService)
+    private readonly IMapper _mapper;
+    public DomainsController(DomainService domainService,
+        IMapper mapper)
     {
         _domainService = domainService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -52,9 +58,9 @@ public sealed class DomainsController : V1ApiController
     /// </summary>
     [HttpPost]
     [Authorise]
-    public async Task<IActionResult> RegisterDomain([FromBody] V1RegisterDomainModel registerDomainModel)
+    public async Task<IActionResult> RegisterDomain([FromBodyOrDefault] RegisterDomainRootModel registerDomainModel)
     {
-        var registeredDomain = await _domainService.RegisterNewDomain(registerDomainModel.Domain);
+        var registeredDomain = await _domainService.RegisterNewDomain(_mapper.Map<RegisterDomainDto>(registerDomainModel.Domain));
 
         var managers = await _domainService.GetDomainManagers(registeredDomain.RegisteredDomain!.Id);
 
@@ -67,16 +73,63 @@ public sealed class DomainsController : V1ApiController
         return Success(response);
     }
 
+    public class RegisterDomainRootModel
+    {
+        public RegisterDomainInfoModel Domain { get; set; }
+
+        public class RegisterDomainInfoModel
+        {
+            public string? Name { get; set; }
+            
+            [FromForm(Name = "network_address")]
+            public string? NetworkAddress { get; set; }
+            
+            [FromForm(Name = "network_port")]
+            public int NetworkPort { get; set; }
+            
+            [FromForm(Name = "origin_ip")]
+            public IPAddress? OriginIp { get; set; }
+        }
+    }
+    
     /// <summary>
     /// Update domain information
     /// </summary>
     [HttpPut("{domainId:guid}")]
     [Authorise]
-    public async Task<IActionResult> UpdateDomain(Guid domainId, [FromBody] UpdateDomainDto domainUpdate)
+    public async Task<IActionResult> UpdateDomain(Guid domainId, [FromBodyOrDefault] UpdateDomainRootModel domainUpdate)
     {
-        domainUpdate.DomainId = domainId;
-        await _domainService.UpdateDomain(domainUpdate);
+        var updateDto = _mapper.Map<UpdateDomainDto>(domainUpdate.Domain);
+        updateDto.DomainId = domainId;
+        await _domainService.UpdateDomain(updateDto);
         return Success();
+    }
+
+    public class UpdateDomainRootModel
+    {
+        public UpdateDomainModel Domain { get; set; }
+        
+        public class UpdateDomainModel
+        {
+            public string? Name { get; set; }
+            public string? Version { get; set; }
+            public string? Protocol { get; set; }
+            
+            [FromForm(Name = "network_address")]
+            public string? NetworkAddress { get; set; }
+            
+            [FromForm(Name = "network_port")]
+            public int? NetworkPort { get; set; }
+            
+            public bool? Restricted { get; set; }
+            public int? Capacity { get; set; }
+            public string? Description { get; set; }
+            public string? Maturity { get; set; }
+            public string? Restriction { get; set; }
+            public List<string>? Managers { get; set; }
+            public List<string>? Tags { get; set; }
+            public DomainHeartbeatDto? Heartbeat { get; set; }
+        }
     }
     
     /// <summary>
@@ -167,4 +220,12 @@ public sealed class DomainsController : V1ApiController
         throw new NotImplementedException();
     }
     
+    public class ModelMapperProfile : Profile
+    {
+        public ModelMapperProfile()
+        {
+            CreateMap<RegisterDomainRootModel.RegisterDomainInfoModel, RegisterDomainDto>();
+            CreateMap<UpdateDomainRootModel.UpdateDomainModel, UpdateDomainDto>();
+        }
+    }
 }

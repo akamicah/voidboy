@@ -159,6 +159,7 @@ public class DomainService
         domain.Version = updateDomainDto.Version ?? domain.Version;
         domain.ProtocolVersion = updateDomainDto.Protocol ?? domain.ProtocolVersion;
         domain.NetworkAddress = updateDomainDto.NetworkAddress ?? domain.NetworkAddress;
+        domain.NetworkPort = updateDomainDto.NetworkPort ?? domain.NetworkPort;
         domain.Restricted = updateDomainDto.Restricted ?? domain.Restricted;
         domain.Capacity = updateDomainDto.Capacity ?? domain.Capacity;
         domain.Description = updateDomainDto.Description ?? domain.Description;
