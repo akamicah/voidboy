@@ -41,14 +41,6 @@ public class StatusCodeExceptionHandler
                         Error = "IllegalMethod",
                     });
                     break;
-                case 415:
-                    context.Response.ContentType = "text/json";
-                    await context.Response.WriteAsJsonAsync(new
-                    {
-                        Status = "failure",
-                        Error = "UnsupportedMediaType",
-                    });
-                    break;
             }
         }
         catch (StatusCodeException exception)
