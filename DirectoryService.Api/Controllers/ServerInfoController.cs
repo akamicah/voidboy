@@ -41,7 +41,7 @@ public class ServerInfoController : ControllerBase
         [JsonPropertyName("metaverse_name")] 
         public string? MetaverseName { get; set; }
         
-        [JsonPropertyName("metaverse_nickname")] 
+        [JsonPropertyName("metaverse_nick_name")] 
         public string? MetaverseNickName { get; set; }
         
         [JsonPropertyName("metaverse_url")] 
