@@ -4,6 +4,7 @@ using DirectoryService.Api.Providers;
 using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared.Attributes;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 namespace DirectoryService.Api.Extensions;
 
@@ -19,6 +20,13 @@ public static class ServiceExtensions
 
         serviceCollection.AddScoped<ISessionProvider, SessionProvider>();
         serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+        serviceCollection.AddMvc(options =>
+        {
+            options.ModelBinderProviders.InsertBodyOrDefaultBinding();
+        });
+
+        serviceCollection.AddAutoMapper(typeof(Program));
         
         serviceCollection.Configure<ApiBehaviorOptions>(options =>
         {
