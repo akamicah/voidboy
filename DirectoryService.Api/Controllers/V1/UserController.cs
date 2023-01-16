@@ -1,10 +1,11 @@
+using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
-using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 namespace DirectoryService.Api.Controllers.V1;
 
@@ -15,12 +16,15 @@ public sealed class UserController : V1ApiController
 {
     private readonly UserService _userService;
     private readonly PlaceService _placeService;
+    private readonly IMapper _mapper;
 
     public UserController(UserService userService,
-        PlaceService placeService)
+        PlaceService placeService,
+        IMapper mapper)
     {
         _userService = userService;
         _placeService = placeService;
+        _mapper = mapper;
     }
     
     /// <summary>
@@ -62,9 +66,13 @@ public sealed class UserController : V1ApiController
     /// </summary>
     [HttpPost("places")]
     [Authorise]
-    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceModel registerPlaceModel)
+    public async Task<IActionResult> RegisterPlace([FromBodyOrDefault] RegisterPlaceRootModel registerPlaceModel)
     {
-        var place = await _placeService.RegisterNewPlace(registerPlaceModel.Place.ToDto());
+        if (registerPlaceModel.Place is null)
+            return Failure();
+
+        var place = await _placeService.RegisterNewPlace(_mapper.Map<RegisterPlaceDto>(registerPlaceModel.Place));
+        
         //TODO: Return PlaceInfo
 
         return Success();
@@ -124,7 +132,7 @@ public sealed class UserController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         page.Where.Add("connection", true);
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new V1UserListModel(result), result);
+        return Success(new UserListModel(result), result);
     }
 
     /// <summary>
@@ -159,7 +167,7 @@ public sealed class UserController : V1ApiController
         var page = PaginatedRequest("username", true, "username");
         page.Where.Add("friend", true);
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new V1UserFriendsModel(result));
+        return Success(new UserFriendsModel(result));
     }
 
     /// <summary>

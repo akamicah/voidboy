@@ -107,14 +107,16 @@ public class Startup
 
         ConfigureForwardHeaders(app);
 
-        app.UseCors(builder => builder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-        );
         app.UseMiddleware<AuthMiddleware>();
         app.UseStatusCodeExceptionHandler();
         app.UseApiExceptionHandler();
+        
+        app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+        );
+        
         app.MapControllers();
         
         DbContext.Configure();

@@ -130,7 +130,7 @@ public sealed class AccountsController : V1ApiController
         var page = PaginatedRequest();
 
         var result = await _sessionTokenService.ListUserTokens(user.Id, page);
-        return new JsonResult(result.Data is not null ? new V1UserTokenListModel(result.Data) : new V1UserTokenListModel());
+        return new JsonResult(result.Data is not null ? new UserTokenListModel(result.Data) : new UserTokenListModel());
     }
 
     /// <summary>
@@ -154,7 +154,7 @@ public sealed class AccountsController : V1ApiController
     /// </summary>
     [HttpGet("verify/email")]
     [AllowAnonymous]
-    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] V1EmailVerificationModel verification)
+    public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
     {
         if (!Guid.TryParse(verification.AccountId, out var accountId))
             return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);

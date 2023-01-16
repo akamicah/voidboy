@@ -5,7 +5,7 @@ using DirectoryService.Shared.Extensions;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class V1DomainInfoModel
+public class DomainInfoModel
 {
     public Guid Id { get; set; }
     
@@ -29,7 +29,7 @@ public class V1DomainInfoModel
     public long NumUsers { get; set; }
     public string? ApiKey { get; set; }
 
-    public V1DomainInfoModel(Domain domain, bool includeApiKey = false)
+    public DomainInfoModel(Domain domain, bool includeApiKey = false)
     {
         Id = domain.Id;
         DomainId = domain.Id;

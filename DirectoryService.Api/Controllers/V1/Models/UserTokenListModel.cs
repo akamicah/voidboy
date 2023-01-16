@@ -7,14 +7,14 @@ namespace DirectoryService.Api.Controllers.V1.Models;
 /// <summary>
 /// Model for V1 of the API
 /// </summary>
-public class V1UserTokenListModel
+public class UserTokenListModel
 {
-    public V1UserTokenListModel()
+    public UserTokenListModel()
     {
         Tokens = new List<TokenModel>();
     }
 
-    public V1UserTokenListModel(IEnumerable<SessionToken> sessionTokens)
+    public UserTokenListModel(IEnumerable<SessionToken> sessionTokens)
     {
         Tokens = new List<TokenModel>();
         foreach (var sessionToken in sessionTokens)

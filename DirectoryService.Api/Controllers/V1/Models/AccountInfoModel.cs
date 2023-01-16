@@ -4,7 +4,7 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class V1AccountInfoModel
+public class AccountInfoModel
 {
     public Guid Id { get; set; }
 
@@ -27,7 +27,7 @@ public class V1AccountInfoModel
     public string? TimeOfLastHeartbeat { get; set; }
     public long TimeOfLastHeartbeatS { get; set; }
 
-    public V1AccountInfoModel(User user)
+    public AccountInfoModel(User user)
     {
         Username = user.Username;
         Email = user.Email;
@@ -59,7 +59,7 @@ public class V1AccountInfoModel
 
     public class LocationModel
     {
-        public V1DomainInfoModel? Root { get; set; }
+        public DomainInfoModel? Root { get; set; }
         public string? Path { get; set; }
     }
 }

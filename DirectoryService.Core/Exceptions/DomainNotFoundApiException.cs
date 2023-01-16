@@ -3,7 +3,7 @@ namespace DirectoryService.Core.Exceptions;
 [Serializable]
 public class DomainNotFoundApiException : BaseApiException
 {
-    public DomainNotFoundApiException() : base("DomainNotFound", "Domain was not found", 404)
+    public DomainNotFoundApiException() : base("DomainNotFound", "Domain was not found", 400)
     {
     }
 }

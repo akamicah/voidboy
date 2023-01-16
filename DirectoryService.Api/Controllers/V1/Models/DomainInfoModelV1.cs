@@ -5,7 +5,7 @@ using DirectoryService.Shared.Extensions;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class V1DomainInfoModelV1
+public class DomainInfoModelV1
 {
     public Guid Id { get; set; }
     
@@ -16,7 +16,7 @@ public class V1DomainInfoModelV1
     public string? WorldName { get; set; }
     public string? Label { get; set; }
     public string? PublicKey { get; set; }
-    public List<V1PlaceInfoSmallModel>? OwnerPlaces { get; set; }
+    public List<PlaceInfoSmallModel>? OwnerPlaces { get; set; }
     
     [JsonPropertyName("sponsorAccountId")]
     public Guid SponsorAccountId { get; set; }
@@ -45,7 +45,7 @@ public class V1DomainInfoModelV1
     public string? WhenDomainEntryCreated { get; set; }
     public long WhenDomainEntryCreatedS { get; set; }
 
-    public V1DomainInfoModelV1(Domain domain, List<User> managers, List<Place> domainPlaces)
+    public DomainInfoModelV1(Domain domain, List<User> managers, List<Place> domainPlaces)
     {
         Id = domain.Id;
         DomainId = domain.Id;

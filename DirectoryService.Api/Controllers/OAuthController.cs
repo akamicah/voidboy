@@ -1,5 +1,6 @@
 using System.Net;
 using AutoMapper;
+using DirectoryService.Api.Controllers.V1.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DirectoryService.Api.Helpers;
@@ -29,7 +30,6 @@ public sealed class OAuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GrantToken([FromBodyOrDefault] TokenGrantRequestModel tokenGrantRequest)
     {
-        var header = Response.Headers;
         try
         {
             var result = await _service.HandleGrantRequest(_mapper.Map<TokenGrantRequestDto>(tokenGrantRequest));
@@ -46,27 +46,6 @@ public sealed class OAuthController : ControllerBase
         catch (ArgumentException e)
         {
             return new JsonErrorResult(new { error = e.Message }, HttpStatusCode.BadRequest);
-        }
-    }
-
-    [AutoMap(typeof(TokenGrantRequestDto))]
-    public class TokenGrantRequestModel
-    {
-        [FromForm(Name = "grant_type")]
-        public string? GrantType { get; set; }
-        
-        [FromForm(Name = "refresh_token")]
-        public string? RefreshToken { get; set; }
-        
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-    }
-    
-    public class ModelMapperProfile : Profile
-    {
-        public ModelMapperProfile()
-        {
-            CreateMap<TokenGrantRequestModel, TokenGrantRequestDto>();
         }
     }
 }

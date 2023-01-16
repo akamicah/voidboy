@@ -4,7 +4,7 @@ using DirectoryService.Shared.Extensions;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class V1PlaceInfoSmallModel
+public class PlaceInfoSmallModel
 {
     public Guid Id { get; set; }
     public Guid PlaceId { get; set; }
@@ -27,7 +27,7 @@ public class V1PlaceInfoSmallModel
     public string? LastActivityUpdate { get; set; }
     public long? LastActivityUpdateS { get; set; }
 
-    public V1PlaceInfoSmallModel(Place place, IEnumerable<User> managers)
+    public PlaceInfoSmallModel(Place place, IEnumerable<User> managers)
     {
         Id = place.Id;
         PlaceId = place.Id;

@@ -49,7 +49,7 @@ public sealed class DomainsController : V1ApiController
 
         return Success(new
         {
-            Domain = new V1DomainInfoModel(domain)
+            Domain = new DomainInfoModel(domain)
         });
     }
     
@@ -66,32 +66,13 @@ public sealed class DomainsController : V1ApiController
 
         var response = new
         {
-            Domain = new V1DomainInfoModel(registeredDomain.RegisteredDomain, true),
-            Place = new V1PlaceInfoSmallModel(registeredDomain.RegisteredPlace!, managers)
+            Domain = new DomainInfoModel(registeredDomain.RegisteredDomain, true),
+            Place = new PlaceInfoSmallModel(registeredDomain.RegisteredPlace!, managers)
         };
         
         return Success(response);
     }
 
-    public class RegisterDomainRootModel
-    {
-        public RegisterDomainInfoModel Domain { get; set; }
-
-        public class RegisterDomainInfoModel
-        {
-            public string? Name { get; set; }
-            
-            [FromForm(Name = "network_address")]
-            public string? NetworkAddress { get; set; }
-            
-            [FromForm(Name = "network_port")]
-            public int NetworkPort { get; set; }
-            
-            [FromForm(Name = "origin_ip")]
-            public IPAddress? OriginIp { get; set; }
-        }
-    }
-    
     /// <summary>
     /// Update domain information
     /// </summary>
@@ -103,33 +84,6 @@ public sealed class DomainsController : V1ApiController
         updateDto.DomainId = domainId;
         await _domainService.UpdateDomain(updateDto);
         return Success();
-    }
-
-    public class UpdateDomainRootModel
-    {
-        public UpdateDomainModel Domain { get; set; }
-        
-        public class UpdateDomainModel
-        {
-            public string? Name { get; set; }
-            public string? Version { get; set; }
-            public string? Protocol { get; set; }
-            
-            [FromForm(Name = "network_address")]
-            public string? NetworkAddress { get; set; }
-            
-            [FromForm(Name = "network_port")]
-            public int? NetworkPort { get; set; }
-            
-            public bool? Restricted { get; set; }
-            public int? Capacity { get; set; }
-            public string? Description { get; set; }
-            public string? Maturity { get; set; }
-            public string? Restriction { get; set; }
-            public List<string>? Managers { get; set; }
-            public List<string>? Tags { get; set; }
-            public DomainHeartbeatDto? Heartbeat { get; set; }
-        }
     }
     
     /// <summary>
@@ -170,13 +124,24 @@ public sealed class DomainsController : V1ApiController
     /// </summary>
     [HttpPut("{domainId:guid}/ice_server_address")]
     [Authorise]
-    public async Task<IActionResult> SetDomainIceServer(Guid domainId, [FromBody] V1UpdateIceServerModel updateIceServerModel)
+    public async Task<IActionResult> SetDomainIceServer(Guid domainId, [FromBodyOrDefault] SetDomainIceServerRootModel updateIceServerModel)
     {
-        if (updateIceServerModel.Domain.IceServerAddress is null)
+        if (updateIceServerModel.Domain?.IceServerAddress is null )
             return Failure();
         
         await _domainService.UpdateIceServerAddress(domainId, updateIceServerModel.Domain.IceServerAddress);
         return Success();
+    }
+
+    public class SetDomainIceServerRootModel
+    {
+        public SetDomainIceServerModel? Domain { get; set; }
+
+        public class SetDomainIceServerModel
+        {
+            [FromForm(Name = "ice_server_address")]
+            public string? IceServerAddress { get; set; }
+        }
     }
 
     /// <summary>
@@ -218,14 +183,5 @@ public sealed class DomainsController : V1ApiController
     {
         //TODO
         throw new NotImplementedException();
-    }
-    
-    public class ModelMapperProfile : Profile
-    {
-        public ModelMapperProfile()
-        {
-            CreateMap<RegisterDomainRootModel.RegisterDomainInfoModel, RegisterDomainDto>();
-            CreateMap<UpdateDomainRootModel.UpdateDomainModel, UpdateDomainDto>();
-        }
     }
 }

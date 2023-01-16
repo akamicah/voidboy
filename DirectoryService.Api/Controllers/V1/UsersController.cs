@@ -1,4 +1,5 @@
 using System.Net;
+using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
@@ -6,6 +7,7 @@ using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 namespace DirectoryService.Api.Controllers.V1;
 
@@ -15,10 +17,13 @@ namespace DirectoryService.Api.Controllers.V1;
 public sealed class UsersController : V1ApiController
 {
     private readonly UserService _userService;
+    private readonly IMapper _mapper;
     
-    public UsersController(UserService userService)
+    public UsersController(UserService userService,
+        IMapper mapper)
     {
         _userService = userService;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -30,7 +35,7 @@ public sealed class UsersController : V1ApiController
     {
         var page = PaginatedRequest("username", true, "username");
         var result = await _userService.ListRelativeUsers(page);
-        return Success(new V1UserListModel(result));
+        return Success(new UserListModel(result));
     }
 
     /// <summary>
@@ -48,17 +53,20 @@ public sealed class UsersController : V1ApiController
     /// <summary>
     /// Request to register a new user
     /// </summary>
-    /// <param name="v1RegisterUserModel"></param>
+    /// <param name="registerUserModel"></param>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] V1RegisterUserModel registerUserModel)
+    public async Task<IActionResult> Register([FromBodyOrDefault] RegisterUserRootModel registerUserModel)
     {
         if (registerUserModel.User == null)
             return Failure();
-
+        
+        var registerUser = _mapper.Map<RegisterUserDto>(registerUserModel.User);
+        
         var ip = HttpContext.Connection.RemoteIpAddress;
-        registerUserModel.User.OriginIp = ip ?? IPAddress.Any;
-        var response = await _userService.RegisterUser(registerUserModel.User);
+        registerUser.OriginIp = ip ?? IPAddress.Any;
+        
+        var response = await _userService.RegisterUser(registerUser);
         
         return Success(response);
     }

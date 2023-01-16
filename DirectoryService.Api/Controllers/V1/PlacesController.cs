@@ -1,9 +1,12 @@
+using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
+using DirectoryService.Core.Dto;
 using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 namespace DirectoryService.Api.Controllers.V1;
 
@@ -13,10 +16,13 @@ namespace DirectoryService.Api.Controllers.V1;
 public sealed class PlacesController : V1ApiController
 {
     private readonly PlaceService _placeService;
+    private readonly IMapper _mapper;
 
-    public PlacesController(PlaceService placeService)
+    public PlacesController(PlaceService placeService,
+        IMapper mapper)
     {
         _placeService = placeService;
+        _mapper = mapper;
     }
     
     /// <summary>
@@ -35,9 +41,13 @@ public sealed class PlacesController : V1ApiController
     /// </summary>
     [HttpPost]
     [Authorise]
-    public async Task<IActionResult> RegisterPlace([FromBody] V1RegisterPlaceModel registerPlaceModel)
+    public async Task<IActionResult> RegisterPlace([FromBodyOrDefault] RegisterPlaceRootModel registerPlaceModel)
     {
-        var place = await _placeService.RegisterNewPlace(registerPlaceModel.Place.ToDto());
+        if (registerPlaceModel.Place is null)
+            return Failure();
+
+        var place = await _placeService.RegisterNewPlace(_mapper.Map<RegisterPlaceDto>(registerPlaceModel.Place));
+        
         //TODO: Return PlaceInfo
 
         return Success();

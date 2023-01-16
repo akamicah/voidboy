@@ -3,9 +3,9 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-public class V1UserListModel
+public class UserListModel
 {
-    public V1UserListModel(PaginatedResult<UserSearchResultDto> result)
+    public UserListModel(PaginatedResult<UserSearchResultDto> result)
     {
         Users = result.Data!;
     }
