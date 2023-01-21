@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace DirectoryService.Api.Controllers.V1.Models;
 
-/// <summary>
-/// Model for V1 of the API
-/// </summary>
 public class EmailVerificationModel
 {
     [FromQuery(Name = "a")]

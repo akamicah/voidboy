@@ -3,6 +3,10 @@ using DirectoryService.Core.Dto;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 public class RegisterUserRootModel
 {
     public RegisterUserModel? User { get; set; }

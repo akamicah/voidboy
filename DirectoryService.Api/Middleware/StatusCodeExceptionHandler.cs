@@ -1,4 +1,5 @@
 using System.Net;
+using Serilog;
 
 namespace DirectoryService.Api.Middleware;
 
@@ -26,6 +27,7 @@ public class StatusCodeExceptionHandler
             switch (context.Response.StatusCode)
             {
                 case 404:
+                    Log.Warning("Request to unknown path: {path} using {method} from {ip}", context.Request.Path, context.Request.Method, context.Connection.RemoteIpAddress);
                     context.Response.ContentType = "text/json";
                     await context.Response.WriteAsJsonAsync(new
                     {
@@ -34,6 +36,7 @@ public class StatusCodeExceptionHandler
                     });
                     break;
                 case 405:
+                    Log.Warning("Request of illegal method: {path} using {method} from {ip}", context.Request.Path, context.Request.Method, context.Connection.RemoteIpAddress);
                     context.Response.ContentType = "text/json";
                     await context.Response.WriteAsJsonAsync(new
                     {

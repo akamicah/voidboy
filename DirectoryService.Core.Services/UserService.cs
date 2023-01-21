@@ -25,7 +25,9 @@ public sealed class UserService
     private readonly ServiceConfiguration _configuration;
     private readonly ISessionProvider _sessionProvider;
     private readonly UserActivationService _userActivationService;
-    private readonly IUserGroupRepository _userGroupRepository;
+    private readonly UserGroupService _userGroupService;
+    private readonly UserPresenceService _userPresenceService;
+    private readonly DomainService _domainService;
 
     public UserService(ILogger<UserService> logger,
         RegisterUserValidator registerUserValidator,
@@ -33,7 +35,9 @@ public sealed class UserService
         ISessionProvider sessionProvider,
         UserActivationService userActivationService,
         IUserProfileRepository userProfileRepository,
-        IUserGroupRepository userGroupRepository)
+        UserGroupService userGroupService,
+        UserPresenceService userPresenceService,
+        DomainService domainService)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
@@ -42,7 +46,9 @@ public sealed class UserService
         _sessionProvider = sessionProvider;
         _userActivationService = userActivationService;
         _userProfileRepository = userProfileRepository;
-        _userGroupRepository = userGroupRepository;
+        _userGroupService = userGroupService;
+        _userPresenceService = userPresenceService;
+        _domainService = domainService;
     }
 
     /// <summary>
@@ -66,6 +72,54 @@ public sealed class UserService
         }
 
         return await _userRepository.FindByUsername(needle.ToLower());
+    }
+
+    public async Task<UserInfoDto?> GetUserInfo(Guid userId)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null) return null;
+
+        var profile = await _userProfileRepository.Retrieve(userId);
+        var presence = await _userPresenceService.GetUserPresence(userId);
+
+        UserLocationDto? location = null; 
+        if (presence is not null)
+        {
+            location = new UserLocationDto()
+            {
+                Domain = await _domainService.FindById(presence.DomainId!.Value),
+                Path = presence.Path
+            };
+        }
+
+
+        var userInfo = new UserInfoDto()
+        {
+            Id = userId,
+            Username = user.Username,
+            Administrator = user.Role == UserRole.Admin,
+            Availability = new List<string>(),
+            CreationDate = user.CreatedAt,
+            Email = user.Email,
+            Enabled = user.Enabled,
+            Role = user.Role,
+            Images = new UserImagesDto()
+            {
+                Hero = profile?.HeroImageUrl,
+                Tiny = profile?.TinyImageUrl,
+                Thumbnail = profile?.ThumbnailImageUrl
+            },
+            ProfileDetail = "", //TODO
+            PublicKey = presence?.PublicKey,
+            Location = location,
+            LastHeartbeat = presence?.LastHeartbeat
+        };
+        var connections = await _userGroupService.GetGroupMembers(user.ConnectionGroup, PaginatedRequest.All());
+        var friends = await _userGroupService.GetGroupMembers(user.FriendsGroup, PaginatedRequest.All());
+        userInfo.Connections = connections.Data?.ToList();
+        userInfo.Friends = friends.Data?.ToList();
+        
+        return userInfo;
     }
 
     public async Task<List<string>> ConvertUserIdsToUsernames(List<Guid> userIds)

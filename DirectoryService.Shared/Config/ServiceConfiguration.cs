@@ -9,13 +9,13 @@ public static class ServiceConfigurationContainer
 
 public class ServiceConfiguration
 {
-    public MetaverseInfoConfig MetaverseInfo { get; set; }
-    public DbConfig Db { get; set; }
-    public DirectoryServiceConfig DirectoryService { get; set; }
-    public RegistrationConfig Registration { get; set; }
-    public TokenConfig Tokens { get; set; }
-    public ServerConfig Server { get; set; }
-    public SmtpConfig Smtp { get; set; }
+    public MetaverseInfoConfig? MetaverseInfo { get; set; }
+    public DbConfig? Db { get; set; }
+    public DirectoryServiceConfig? DirectoryService { get; set; }
+    public RegistrationConfig? Registration { get; set; }
+    public TokenConfig? Tokens { get; set; }
+    public ServerConfig? Server { get; set; }
+    public SmtpConfig? Smtp { get; set; }
 
     public class MetaverseInfoConfig
     {

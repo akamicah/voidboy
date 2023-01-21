@@ -5,6 +5,9 @@ using DirectoryService.Shared.Extensions;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 public class DomainInfoModel
 {
     public Guid Id { get; set; }

@@ -1,6 +1,7 @@
 using System.Net;
 using FluentValidation;
 using DirectoryService.Core.Exceptions;
+using Serilog;
 
 namespace DirectoryService.Api.Middleware;
 
@@ -25,6 +26,7 @@ public class ApiExceptionMiddleware
         }
         catch (BaseApiException ex)
         {
+            Log.Warning("{code} Api Exception: {path} using {method} from {ip}", ex.ApiErrorCode(), httpContext.Request.Path, httpContext.Request.Method, httpContext.Connection.RemoteIpAddress);
             await HandleApiExceptionAsync(httpContext, ex);
         }
         catch (ValidationException ex)
@@ -33,6 +35,7 @@ public class ApiExceptionMiddleware
         }
         catch (Exception ex)
         {
+            Log.Warning("Unhandled Exception: {path} using {method} from {ip}", httpContext.Request.Path, httpContext.Request.Method, httpContext.Connection.RemoteIpAddress);
             _logger.LogError("Something went wrong: {ex}", ex);
             await HandleOtherExceptionAsync(httpContext);
         }

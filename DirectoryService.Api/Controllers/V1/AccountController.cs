@@ -16,16 +16,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace DirectoryService.Api.Controllers.V1;
 
 [Produces("application/json")]
-[Route("api/v1/accounts")]
+[Route("api/v1/account")]
 [ApiController]
-public sealed class AccountsController : V1ApiController
+public sealed class AccountController : V1ApiController
 {
     private readonly ServiceConfiguration _configuration;
     private readonly UserActivationService _userActivationService;
     private readonly SessionTokenService _sessionTokenService;
     private readonly UserService _userService;
     
-    public AccountsController(UserActivationService userActivationService,
+    public AccountController(UserActivationService userActivationService,
         SessionTokenService sessionTokenService,
         UserService userService)
     {
@@ -38,7 +38,7 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Fetch a list of accounts
     /// </summary>
-    [HttpGet]
+    [HttpGet("api/v1/accounts")]
     [Authorise]
     public async Task<IActionResult> GetAccounts()
     {
@@ -49,7 +49,7 @@ public sealed class AccountsController : V1ApiController
     /// <summary>
     /// Get account by user reference (user id or username)
     /// </summary>
-    [HttpGet("{accountReference}")]
+    [HttpGet("{userReference}")]
     [Authorise]
     public async Task<IActionResult> GetUser(string userReference)
     {
@@ -58,10 +58,16 @@ public sealed class AccountsController : V1ApiController
             throw new UserNotFoundApiException();
         
         RestrictToSelfOrAdmin(user.Id);
+
+        var userInfo = await _userService.GetUserInfo(user.Id);
         
+        if (userInfo is null)
+            throw new UserNotFoundApiException();
         
-        //TODO
-        throw new NotImplementedException();
+        return Success(new
+        {
+            Account = new AccountInfoModel(userInfo)
+        });
     }
     
     /// <summary>
@@ -157,19 +163,19 @@ public sealed class AccountsController : V1ApiController
     public async Task<IActionResult> EmailVerificationEndpoint([FromQuery] EmailVerificationModel verification)
     {
         if (!Guid.TryParse(verification.AccountId, out var accountId))
-            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+            return new RedirectResult(_configuration.Registration!.EmailVerificationFailRedirect!);
 
         if (!Guid.TryParse(verification.VerificationToken, out var verificationToken))
-            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+            return new RedirectResult(_configuration.Registration!.EmailVerificationFailRedirect!);
 
         try
         {
             await _userActivationService.ReceiveUserActivationResponse(accountId, verificationToken);
-            return new RedirectResult(_configuration.Registration.EmailVerificationSuccessRedirect!);
+            return new RedirectResult(_configuration.Registration!.EmailVerificationSuccessRedirect!);
         }
         catch (Exception e)
         {
-            return new RedirectResult(_configuration.Registration.EmailVerificationFailRedirect!);
+            return new RedirectResult(_configuration.Registration!.EmailVerificationFailRedirect!);
         }
     }
 }

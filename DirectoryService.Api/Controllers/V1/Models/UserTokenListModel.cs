@@ -4,9 +4,11 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Api.Controllers.V1.Models;
    
-/// <summary>
-/// Model for V1 of the API
-/// </summary>
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable CollectionNeverQueried.Global
+
 public class UserTokenListModel
 {
     public UserTokenListModel()
