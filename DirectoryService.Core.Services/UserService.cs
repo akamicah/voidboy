@@ -27,7 +27,8 @@ public sealed class UserService
     private readonly UserActivationService _userActivationService;
     private readonly UserGroupService _userGroupService;
     private readonly UserPresenceService _userPresenceService;
-    private readonly DomainService _domainService;
+    private readonly IDomainRepository _domainRepository;
+    private readonly CryptographyService _cryptographyService;
 
     public UserService(ILogger<UserService> logger,
         RegisterUserValidator registerUserValidator,
@@ -37,7 +38,8 @@ public sealed class UserService
         IUserProfileRepository userProfileRepository,
         UserGroupService userGroupService,
         UserPresenceService userPresenceService,
-        DomainService domainService)
+        IDomainRepository domainRepository,
+        CryptographyService cryptographyService)
     {
         _logger = logger;
         _registerUserValidator = registerUserValidator;
@@ -48,7 +50,8 @@ public sealed class UserService
         _userProfileRepository = userProfileRepository;
         _userGroupService = userGroupService;
         _userPresenceService = userPresenceService;
-        _domainService = domainService;
+        _domainRepository = domainRepository;
+        _cryptographyService = cryptographyService;
     }
 
     /// <summary>
@@ -87,11 +90,10 @@ public sealed class UserService
         {
             location = new UserLocationDto()
             {
-                Domain = await _domainService.FindById(presence.DomainId!.Value),
+                Domain = await _domainRepository.Retrieve(presence.DomainId!.Value),
                 Path = presence.Path
             };
         }
-
 
         var userInfo = new UserInfoDto()
         {
@@ -198,7 +200,7 @@ public sealed class UserService
 
         var role = UserRole.User;
 
-        if (_configuration.Registration.DefaultAdminAccount != "" &&
+        if (_configuration.Registration!.DefaultAdminAccount != "" &&
             registerUserDto.Username == _configuration.Registration.DefaultAdminAccount)
         {
             _logger.LogWarning("Default administrator account being registered: {username}", registerUserDto.Username);
@@ -284,5 +286,77 @@ public sealed class UserService
 
         _logger.LogInformation("Deleting user {username} - User ID: {uid}", user.Username, user.Id);
         await _userRepository.Delete(user.Id);
+    }
+
+    /// <summary>
+    /// Update heartbeat for user
+    /// </summary>
+    public async Task UpdatePublicKey(Guid userId, Stream publicKey)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        var presence = await _userPresenceService.GetUserPresence(userId);
+        if (presence == null)
+        {
+            _logger.LogWarning("Set public key for user {username} with no presence.", user.Username);
+            presence = new UserPresence()
+            {
+                Id = userId,
+                DomainId = Guid.Empty,
+                PlaceId = Guid.Empty,
+                NetworkAddress = ""
+            };
+        }
+        presence.PublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(), CryptographyService.PublicKeyType.PKCS1_PublicKey);
+       
+        await _userPresenceService.UpdateUserPresence(presence);
+    }
+
+    /// <summary>
+    /// Update heartbeat for user by session
+    /// </summary>
+    public async Task UpdatePublicKey(Stream publicKey)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null) throw new UnauthorisedApiException();
+        
+        await UpdatePublicKey(session.UserId, publicKey);
+    }
+
+    public async Task ProcessHeartbeat(Guid userId, UserHeartbeatDto userHeartbeat)
+    {
+        var uid = userHeartbeat.UserId;
+    }
+    
+    public async Task ProcessHeartbeat(UserHeartbeatDto userHeartbeat)
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null) throw new UnauthorisedApiException();
+
+        await ProcessHeartbeat(session.UserId, userHeartbeat);
+
+    }
+
+    public async Task<UserProfileDto> GetUserProfile(Guid userId)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        return new UserProfileDto()
+        {
+            UserId = userId,
+            Username = user.Username
+        };
+    }
+    
+    public async Task<UserProfileDto> GetUserProfile()
+    {
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null) throw new UnauthorisedApiException();
+
+        return await GetUserProfile(session.UserId);
     }
 }

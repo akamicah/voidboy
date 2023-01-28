@@ -18,7 +18,7 @@ public class PlaceService
 {
     private readonly ILogger<PlaceService> _logger;
     private readonly IPlaceRepository _placeRepository;
-    private readonly IDomainRepository _domainRepository;
+    private readonly RepositoryInterfaces.IDomainRepository _domainRepository;
     private readonly ISessionProvider _sessionProvider;
     private readonly RegisterPlaceValidator _registerPlaceValidator;
     private readonly ISessionTokenRepository _sessionTokenRepository;
@@ -26,7 +26,7 @@ public class PlaceService
 
     public PlaceService(ILogger<PlaceService> logger,
         IPlaceRepository placeRepository,
-        IDomainRepository domainRepository,
+        RepositoryInterfaces.IDomainRepository domainRepository,
         ISessionProvider sessionProvider,
         RegisterPlaceValidator registerPlaceValidator,
         ISessionTokenRepository sessionTokenRepository)

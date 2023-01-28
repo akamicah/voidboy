@@ -341,7 +341,7 @@ public class DomainService
         
         if (!SessionValidForDomain(domain, session)) throw new UnauthorisedApiException();
         
-        var pemPublicKey = await _cryptographyService.ConvertPkcs1Key(publicKey.ToByteArray());
+        var pemPublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(), CryptographyService.PublicKeyType.SPKI_X509_PublicKey);
 
         domain.PublicKey = pemPublicKey;
         await _domainRepository.Update(domain);

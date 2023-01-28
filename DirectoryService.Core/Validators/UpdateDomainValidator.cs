@@ -13,7 +13,7 @@ public class UpdateDomainValidator : AbstractValidator<UpdateDomainDto>
         var config = ServiceConfigurationContainer.Config.DirectoryService;
         var profanityFilter = new ProfanityFilter.ProfanityFilter();
         RuleFor(m => m.Name)
-            .MinimumLength(config.MinDomainNameLength).WithMessage("{PropertyName} must be a minimum of " + config.MinDomainNameLength + " characters")
+            .MinimumLength(config!.MinDomainNameLength).WithMessage("{PropertyName} must be a minimum of " + config.MinDomainNameLength + " characters")
             .MaximumLength(config.MaxDomainNameLength).WithMessage("{PropertyName} must be a maximum of " + config.MaxDomainNameLength + "characters")
             .Matches(@"^[A-Za-z0-9._-]+$").WithMessage("{PropertyName} can only contain letters, numbers, hyphens, dashes, periods.")
             .Custom((s, context) =>

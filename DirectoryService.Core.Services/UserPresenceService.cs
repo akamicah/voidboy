@@ -29,6 +29,7 @@ public class UserPresenceService
 
     public async Task<UserPresence?> UpdateUserPresence(UserPresence userPresence)
     {
+        userPresence.LastHeartbeat = DateTime.Now;
         return await _userPresenceRepository.Create(userPresence);
     }
     

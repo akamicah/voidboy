@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
 using DirectoryService.Core.Dto;
+using DirectoryService.Core.Exceptions;
 using DirectoryService.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Toycloud.AspNetCore.Mvc.ModelBinding;
@@ -197,10 +199,11 @@ public sealed class UserController : V1ApiController
     /// </summary>
     [HttpPut("heartbeat")]
     [Authorise]
-    public async Task<IActionResult> ReceiveHeartbeat()
+    public async Task<IActionResult> ReceiveHeartbeat(UserHeartbeatRootModel heartbeatModel)
     {
-        //TODO
-        throw new NotImplementedException();
+        var heartbeat = _mapper.Map<UserHeartbeatDto>(heartbeatModel.Location);
+        await _userService.ProcessHeartbeat(heartbeat);
+        return Success();
     }
     
     /// <summary>
@@ -208,10 +211,11 @@ public sealed class UserController : V1ApiController
     /// </summary>
     [HttpPut("location")]
     [Authorise]
-    public async Task<IActionResult> ReceiveLocation()
+    public async Task<IActionResult> ReceiveLocation(UserHeartbeatRootModel locationHeartbeatModel)
     {
-        //TODO
-        throw new NotImplementedException();
+        var heartbeat = _mapper.Map<UserHeartbeatDto>(locationHeartbeatModel.Location);
+        await _userService.ProcessHeartbeat(heartbeat);
+        return Success();
     }
 
     /// <summary>
@@ -221,8 +225,30 @@ public sealed class UserController : V1ApiController
     [Authorise]
     public async Task<IActionResult> GetUserProfile()
     {
-        //TODO
-        throw new NotImplementedException();
+        var profile = await _userService.GetUserProfile();
+
+        return Success(new
+        {
+            User = new UserProfileModel()
+            {
+                AccountId = profile.UserId,
+                Username = profile.Username,
+                DiscourseApiKey = "",
+                WalletId = Guid.Empty,
+                XmppPassword = ""
+            }
+        });
+    }
+
+    public class UserProfileModel
+    {
+        [JsonPropertyName("accountId")]
+        public Guid AccountId { get; set; }
+        
+        public string? Username { get; set; }
+        public string? XmppPassword { get; set; }
+        public string? DiscourseApiKey { get; set; }
+        public Guid WalletId { get; set; }
     }
 
     /// <summary>
@@ -232,7 +258,27 @@ public sealed class UserController : V1ApiController
     [Authorise]
     public async Task<IActionResult> PutPublicKey()
     {
-        //TODO
-        throw new NotImplementedException();
+        var cert = HttpContext.Request.Form.Files.GetFile("public_key");
+        if (cert is null)
+            throw new BaseApiException("FileMissing", "The file 'public_key' was not included.", 400);
+
+        await _userService.UpdatePublicKey(cert.OpenReadStream());
+        return Success();
     }
+
+    // Does nothing for now since I believe the locker feature is deprecated
+    [HttpPost("locker")]
+    public IActionResult PostLocker()
+    {
+        return Success(new { });
+    }
+    
+    // Does nothing for now since I believe the locker feature is deprecated
+    [HttpGet("locker")]
+    public IActionResult GetLocker()
+    {
+        return Success(new { });
+    }
+    
+    
 }

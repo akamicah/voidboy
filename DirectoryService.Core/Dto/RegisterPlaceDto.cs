@@ -8,5 +8,5 @@ public class RegisterPlaceDto
     public string? Description { get; set; }
     public Guid DomainId { get; set; }
     public string? Path { get; set; }
-    public IPAddress CreatorIp { get; set; }
+    public IPAddress? CreatorIp { get; set; }
 }

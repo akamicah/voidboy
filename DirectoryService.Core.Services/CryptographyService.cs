@@ -1,3 +1,4 @@
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Extensions;
@@ -52,19 +53,28 @@ public class CryptographyService
     }
 
     /// <summary>
-    /// Convert a PKCS1 in DER binary format into SPKI in PEM format
+    /// Convert a public key in binary format into SPKI in PEM format
     /// </summary>
-    public async Task<string> ConvertPkcs1Key(byte[] pkcs1Key)
+    public string ConvertPublicKey(byte[] pkcs1Key, PublicKeyType type)
     {
         try
         {
             var rsa = RSA.Create();
-            rsa.ImportSubjectPublicKeyInfo(pkcs1Key, out var bytesRead);
+            var bytesRead = 0;
+            switch (type)
+            {
+                case PublicKeyType.SPKI_X509_PublicKey:
+                    rsa.ImportSubjectPublicKeyInfo(pkcs1Key, out bytesRead);
+                    break;
+                case PublicKeyType.PKCS1_PublicKey:
+                    rsa.ImportRSAPublicKey(pkcs1Key, out bytesRead);
+                    break;
+            }
             var pem = "";
             if (bytesRead == 0)
             {
                 _logger.LogError(
-                    "An error occured converting RSA public key from PKCS1 (DER) to SPKI (PEM). Bytes read: 0");
+                    "An error occured converting RSA public key from binary to SPKI (PEM). Bytes read: 0");
             }
             else
             {
@@ -75,10 +85,16 @@ public class CryptographyService
         }
         catch (Exception e)
         {
-            _logger.LogError("An error occured converting RSA public key from PKCS1 (DER) to SPKI (PEM). {exception}", e);
+            _logger.LogError("An error occured converting RSA public key from binary to SPKI (PEM). {exception}", e);
         }
 
         return "";
+    }
+
+    public enum PublicKeyType
+    {
+        SPKI_X509_PublicKey,
+        PKCS1_PublicKey
     }
 
     // Strip out header, footer and newlines from PEM RSA key

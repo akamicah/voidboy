@@ -14,7 +14,7 @@ public class DbContext
 
     public DbContext()
     {
-        _dbConnectionString = ServiceConfigurationContainer.Config.Db.ConnectionString;
+        _dbConnectionString = ServiceConfigurationContainer.Config.Db!.ConnectionString;
     }
 
     public async Task<IDbConnection> CreateConnectionAsync()

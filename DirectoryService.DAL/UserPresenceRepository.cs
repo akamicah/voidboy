@@ -17,10 +17,10 @@ public class UserPresenceRepository : BaseRepository<UserPresence>, IUserPresenc
     public async Task<UserPresence> Create(UserPresence entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
-        var id = await con.QuerySingleAsync<Guid>(
+        var id = await con.ExecuteAsync(
             @"INSERT INTO userPresence (id, domainId, publicKey, path, lastHeartbeat)
                 VALUES( @id, @domainId, @publicKey, @path, @lastHeartbeat)
-                ON CONFLICT DO UPDATE 
+                ON CONFLICT(id) DO UPDATE 
                     SET domainId = excluded.domainId,
                         publicKey = excluded.publicKey,
                         path = excluded.path,
