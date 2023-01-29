@@ -397,4 +397,23 @@ public sealed class UserService
 
         return await GetUserProfile(session.UserId);
     }
+
+    public async Task UpdateUserByField(Guid userId, string field, string value)
+    {
+        
+        var session = await _sessionProvider.GetRequesterSession();
+        if (session is null) throw new UnauthorisedApiException();
+        
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        //TODO
+        switch (field.ToLower())
+        {
+            case "password":
+
+                break;
+        }
+    }
 }

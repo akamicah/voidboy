@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
 using DirectoryService.Api.Helpers;
@@ -7,6 +8,7 @@ using DirectoryService.Core.Services;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Config;
 using Microsoft.AspNetCore.Mvc;
+using Toycloud.AspNetCore.Mvc.ModelBinding;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Local
@@ -116,10 +118,21 @@ public sealed class AccountController : V1ApiController
     // Is this in use?
     [HttpPost("{accountId:guid}/field/{fieldName}")]
     [Authorise]
-    public async Task<IActionResult> SetAccountField(Guid accountId, string fieldName, [FromBody] UpdateFieldDto fieldUpdate)
+    public async Task<IActionResult> SetAccountField(Guid accountId, string fieldName, [FromBodyOrDefault] UpdateFieldRootModel fieldUpdate)
     {
-        //TODO
-        throw new NotImplementedException();
+        if (fieldUpdate.Set is null || fieldUpdate.Set.HasValue == false)
+            return Failure();
+
+        switch (fieldUpdate.Set.Value.ValueKind)
+        {
+            case JsonValueKind.String:
+                await _userService.UpdateUserByField(accountId, fieldName, fieldUpdate.Set.Value.ToString());
+                return Success();
+            
+            default:
+                throw new NotImplementedException();
+                
+        }
     }
     
     /// <summary>
