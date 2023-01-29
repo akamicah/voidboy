@@ -1,4 +1,3 @@
-using System.Buffers.Text;
 using System.Security.Cryptography;
 using DirectoryService.Shared.Attributes;
 using DirectoryService.Shared.Extensions;
@@ -63,10 +62,10 @@ public class CryptographyService
             var bytesRead = 0;
             switch (type)
             {
-                case PublicKeyType.SPKI_X509_PublicKey:
+                case PublicKeyType.SpkiX509PublicKey:
                     rsa.ImportSubjectPublicKeyInfo(pkcs1Key, out bytesRead);
                     break;
-                case PublicKeyType.PKCS1_PublicKey:
+                case PublicKeyType.Pkcs1PublicKey:
                     rsa.ImportRSAPublicKey(pkcs1Key, out bytesRead);
                     break;
             }
@@ -93,8 +92,8 @@ public class CryptographyService
 
     public enum PublicKeyType
     {
-        SPKI_X509_PublicKey,
-        PKCS1_PublicKey
+        SpkiX509PublicKey,
+        Pkcs1PublicKey
     }
 
     // Strip out header, footer and newlines from PEM RSA key

@@ -64,7 +64,7 @@ public class CryptographyServiceTests : TestBase
 
         publicKeyPem = CryptographyService.SimplifyPemKey(publicKeyPem);
         
-        var generatedPem = cryptographyService.ConvertPublicKey(publicKeyDer, CryptographyService.PublicKeyType.SPKI_X509_PublicKey);
+        var generatedPem = cryptographyService.ConvertPublicKey(publicKeyDer, CryptographyService.PublicKeyType.SpkiX509PublicKey);
         
         generatedPem = CryptographyService.SimplifyPemKey(generatedPem);
         

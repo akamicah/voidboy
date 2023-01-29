@@ -203,6 +203,8 @@ public sealed class UserController : V1ApiController
     {
         var heartbeat = _mapper.Map<UserHeartbeatDto>(heartbeatModel.Location);
         await _userService.ProcessHeartbeat(heartbeat);
+        
+        
         return Success();
     }
     

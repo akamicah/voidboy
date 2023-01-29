@@ -309,7 +309,7 @@ public sealed class UserService
                 NetworkAddress = ""
             };
         }
-        presence.PublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(), CryptographyService.PublicKeyType.PKCS1_PublicKey);
+        presence.PublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(), CryptographyService.PublicKeyType.Pkcs1PublicKey);
        
         await _userPresenceService.UpdateUserPresence(presence);
     }
@@ -327,7 +327,33 @@ public sealed class UserService
 
     public async Task ProcessHeartbeat(Guid userId, UserHeartbeatDto userHeartbeat)
     {
-        var uid = userHeartbeat.UserId;
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        var presence = await _userPresenceService.GetUserPresence(userId);
+        if (presence == null)
+        {
+            _logger.LogWarning("Recieved heartbeat for user {username} with no presence.", user.Username);
+            presence = new UserPresence()
+            {
+                Id = userId,
+                DomainId = Guid.Empty,
+                PlaceId = Guid.Empty,
+                NetworkAddress = ""
+            };
+        }
+
+        presence.LastHeartbeat = DateTime.Now;
+        if (userHeartbeat.Connected != null) presence.Connected = userHeartbeat.Connected;
+        if (userHeartbeat.Path != null) presence.Path = userHeartbeat.Path;
+        if (userHeartbeat.PlaceId != null) presence.PlaceId = userHeartbeat.PlaceId;
+        if (userHeartbeat.DomainId != null) presence.DomainId = userHeartbeat.DomainId;
+        if (userHeartbeat.NetworkAddress != null) presence.NetworkAddress = userHeartbeat.NetworkAddress;
+        if (userHeartbeat.NodeId != null) presence.NodeId = userHeartbeat.NodeId;
+        if (userHeartbeat.Availability != null) presence.Availability = userHeartbeat.Availability;
+        
+        await _userPresenceService.UpdateUserPresence(presence);
     }
     
     public async Task ProcessHeartbeat(UserHeartbeatDto userHeartbeat)

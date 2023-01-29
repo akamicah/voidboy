@@ -7,7 +7,7 @@ CREATE TABLE userPresence
     domainId       UUID      DEFAULT NULL,
     placeId        UUID      DEFAULT NULL,
     networkAddress TEXT      DEFAULT NULL,
-    nodeId         TEXT      DEFAULT NULL,
+    nodeId         UUID      DEFAULT NULL,
     availability   TEXT      DEFAULT NULL,
     publicKey      TEXT      DEFAULT NULL,
     path           TEXT      DEFAULT '',

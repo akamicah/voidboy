@@ -11,7 +11,7 @@ public class UserHeartbeatRootModel
 
     public class UserHeartbeatModel
     {
-        public bool Connected { get; set; }
+        public bool? Connected { get; set; }
         public string? Path { get; set; }
         public Guid? DomainId { get; set; }
         public Guid? PlaceId { get; set; }
