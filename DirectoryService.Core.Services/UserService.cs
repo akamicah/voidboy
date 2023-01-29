@@ -264,7 +264,10 @@ public sealed class UserService
         }
 
         if (!CryptographyService.AuthenticatePassword(password, user.AuthHash!))
+        {
+            _logger.LogInformation("Failed login attempt for {username}.", user.Username);
             throw new InvalidCredentialsApiException();
+        }
 
         if (user.Activated) return user;
 
@@ -325,14 +328,17 @@ public sealed class UserService
         await UpdatePublicKey(session.UserId, publicKey);
     }
 
-    public async Task ProcessHeartbeat(Guid userId, UserHeartbeatDto userHeartbeat)
+    /// <summary>
+    /// Process heartbeat/location update for userId
+    /// </summary>
+    public async Task<UserPresence> ProcessHeartbeat(Guid userId, UserHeartbeatDto? userHeartbeat)
     {
         var user = await _userRepository.Retrieve(userId);
         if (user is null)
             throw new UserNotFoundApiException();
 
         var presence = await _userPresenceService.GetUserPresence(userId);
-        if (presence == null)
+        if (presence is null)
         {
             _logger.LogWarning("Recieved heartbeat for user {username} with no presence.", user.Username);
             presence = new UserPresence()
@@ -345,24 +351,30 @@ public sealed class UserService
         }
 
         presence.LastHeartbeat = DateTime.Now;
-        if (userHeartbeat.Connected != null) presence.Connected = userHeartbeat.Connected;
-        if (userHeartbeat.Path != null) presence.Path = userHeartbeat.Path;
-        if (userHeartbeat.PlaceId != null) presence.PlaceId = userHeartbeat.PlaceId;
-        if (userHeartbeat.DomainId != null) presence.DomainId = userHeartbeat.DomainId;
-        if (userHeartbeat.NetworkAddress != null) presence.NetworkAddress = userHeartbeat.NetworkAddress;
-        if (userHeartbeat.NodeId != null) presence.NodeId = userHeartbeat.NodeId;
-        if (userHeartbeat.Availability != null) presence.Availability = userHeartbeat.Availability;
-        
-        await _userPresenceService.UpdateUserPresence(presence);
+        if (userHeartbeat != null)
+        {
+            if (userHeartbeat.Connected != null) presence.Connected = userHeartbeat.Connected;
+            if (userHeartbeat.Path != null) presence.Path = userHeartbeat.Path;
+            if (userHeartbeat.PlaceId != null) presence.PlaceId = userHeartbeat.PlaceId;
+            if (userHeartbeat.DomainId != null) presence.DomainId = userHeartbeat.DomainId;
+            if (userHeartbeat.NetworkAddress != null) presence.NetworkAddress = userHeartbeat.NetworkAddress;
+            if (userHeartbeat.NodeId != null) presence.NodeId = userHeartbeat.NodeId;
+            if (userHeartbeat.Availability != null) presence.Availability = userHeartbeat.Availability;
+        }
+
+        presence = await _userPresenceService.UpdateUserPresence(presence);
+        return presence!;
     }
     
-    public async Task ProcessHeartbeat(UserHeartbeatDto userHeartbeat)
+    /// <summary>
+    /// Process heartbeat/location update for session's userId
+    /// </summary>
+    public async Task<UserPresence> ProcessHeartbeat(UserHeartbeatDto? userHeartbeat)
     {
         var session = await _sessionProvider.GetRequesterSession();
         if (session is null) throw new UnauthorisedApiException();
 
-        await ProcessHeartbeat(session.UserId, userHeartbeat);
-
+        return await ProcessHeartbeat(session.UserId, userHeartbeat);
     }
 
     public async Task<UserProfileDto> GetUserProfile(Guid userId)

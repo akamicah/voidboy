@@ -28,7 +28,7 @@ public sealed class UserController : V1ApiController
         _placeService = placeService;
         _mapper = mapper;
     }
-    
+
     /// <summary>
     /// Get requester owned places
     /// </summary>
@@ -62,7 +62,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Register a new place
     /// </summary>
@@ -74,7 +74,7 @@ public sealed class UserController : V1ApiController
             return Failure();
 
         var place = await _placeService.RegisterNewPlace(_mapper.Map<RegisterPlaceDto>(registerPlaceModel.Place));
-        
+
         //TODO: Return PlaceInfo
 
         return Success();
@@ -101,7 +101,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Connection request
     /// </summary>
@@ -112,7 +112,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Delete connection request
     /// </summary>
@@ -123,7 +123,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Fetch user connections for logged in account
     /// </summary>
@@ -147,7 +147,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Remove a connection from the requester connections list
     /// </summary>
@@ -158,7 +158,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Return a list of the requester friends
     /// </summary>
@@ -182,7 +182,7 @@ public sealed class UserController : V1ApiController
         //TODO
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
     /// Remove a friend from the requester friends list
     /// </summary>
@@ -199,25 +199,29 @@ public sealed class UserController : V1ApiController
     /// </summary>
     [HttpPut("heartbeat")]
     [Authorise]
-    public async Task<IActionResult> ReceiveHeartbeat(UserHeartbeatRootModel heartbeatModel)
+    public async Task<IActionResult> ReceiveHeartbeat([FromBodyOrDefault] UserHeartbeatRootModel heartbeatModel)
     {
         var heartbeat = _mapper.Map<UserHeartbeatDto>(heartbeatModel.Location);
-        await _userService.ProcessHeartbeat(heartbeat);
-        
-        
-        return Success();
+        var presence = await _userService.ProcessHeartbeat(heartbeat);
+        return Success(new
+        {
+            SessionId = presence.NodeId
+        });
     }
-    
+
     /// <summary>
-    /// Receive a user's location
+    /// Receive a user's location heartbeat
     /// </summary>
     [HttpPut("location")]
     [Authorise]
-    public async Task<IActionResult> ReceiveLocation(UserHeartbeatRootModel locationHeartbeatModel)
+    public async Task<IActionResult> ReceiveLocation([FromBodyOrDefault] UserHeartbeatRootModel locationHeartbeatModel)
     {
         var heartbeat = _mapper.Map<UserHeartbeatDto>(locationHeartbeatModel.Location);
-        await _userService.ProcessHeartbeat(heartbeat);
-        return Success();
+        var presence = await _userService.ProcessHeartbeat(heartbeat);
+        return Success(new
+        {
+            SessionId = presence.NodeId
+        });
     }
 
     /// <summary>
@@ -244,9 +248,7 @@ public sealed class UserController : V1ApiController
 
     public class UserProfileModel
     {
-        [JsonPropertyName("accountId")]
-        public Guid AccountId { get; set; }
-        
+        [JsonPropertyName("accountId")] public Guid AccountId { get; set; }
         public string? Username { get; set; }
         public string? XmppPassword { get; set; }
         public string? DiscourseApiKey { get; set; }
@@ -274,13 +276,11 @@ public sealed class UserController : V1ApiController
     {
         return Success(new { });
     }
-    
+
     // Does nothing for now since I believe the locker feature is deprecated
     [HttpGet("locker")]
     public IActionResult GetLocker()
     {
         return Success(new { });
     }
-    
-    
 }

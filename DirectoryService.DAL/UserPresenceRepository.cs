@@ -17,18 +17,37 @@ public class UserPresenceRepository : BaseRepository<UserPresence>, IUserPresenc
     public async Task<UserPresence> Create(UserPresence entity)
     {
         using var con = await DbContext.CreateConnectionAsync();
-        var id = await con.ExecuteAsync(
-            @"INSERT INTO userPresence (id, domainId, publicKey, path, lastHeartbeat)
-                VALUES( @id, @domainId, @publicKey, @path, @lastHeartbeat)
+        await con.ExecuteAsync(
+            @"INSERT INTO userPresence (id,
+                          connected,
+                          domainId,
+                          placeId,
+                          networkAddress,
+                          nodeId, 
+                          availability,
+                          publicKey,
+                          path,
+                          lastHeartbeat)
+                VALUES( @id, @connected, @domainId, @placeId, @networkAddress, @nodeId, @availability, @publicKey, @path, @lastHeartbeat)
                 ON CONFLICT(id) DO UPDATE 
-                    SET domainId = excluded.domainId,
+                    SET connected = excluded.connected,
+                        domainId = excluded.domainId,
+                        placeId = excluded.placeId,
+                        networkaddress = excluded.networkAddress,
+                        nodeId = excluded.nodeId,
+                        availability = excluded.availability,
                         publicKey = excluded.publicKey,
                         path = excluded.path,
                         lastHeartbeat = excluded.lastHeartbeat",
             new
             {
                 entity.Id,
+                entity.Connected,
                 entity.DomainId,
+                entity.PlaceId,
+                entity.NetworkAddress,
+                entity.NodeId,
+                entity.Availability,
                 entity.PublicKey,
                 entity.Path,
                 entity.LastHeartbeat
@@ -53,14 +72,26 @@ public class UserPresenceRepository : BaseRepository<UserPresence>, IUserPresenc
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"UPDATE userPresence  SET domainId = @domainId,
+            @"UPDATE userPresence SET 
+                        connected = @connected,
+                        domainId = @domainId,
+                        placeId = @placeId,
+                        networkAddress = @networkAddress,
+                        nodeId = @nodeId,
+                        availability = @availability,                        
                         publicKey = @publicKey,
-                        path = @path,
-                        lastHeartbeat = @lastHeartbeat WHERE id = @userId",
+                        path = @path,                        
+                        lastHeartbeat = @lastHeartbeat 
+                    WHERE id = @userId",
             new
             {
                 entity.Id,
+                entity.Connected,
                 entity.DomainId,
+                entity.PlaceId,
+                entity.NetworkAddress,
+                entity.NodeId,
+                entity.Availability,
                 entity.PublicKey,
                 entity.Path,
                 entity.LastHeartbeat

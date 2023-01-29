@@ -150,7 +150,7 @@ LEFT JOIN (SELECT CASE WHEN ugm.userid IS NULL THEN FALSE ELSE TRUE END AS isFri
         if(!includeSelf)
             page.Where.Add("self", false);
 
-            return await QueryDynamic(sqlTemplate, "relativeUsers", page, dynamicParameters);
+        return await QueryDynamic(sqlTemplate, "relativeUsers", page, dynamicParameters);
     }
 
     public async Task<List<string>> UserIdsToUsernames(List<Guid> userIds)
