@@ -5,7 +5,6 @@ using DirectoryService.Core.Services;
 using DirectoryService.Core.Services.Interfaces;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Config;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.Tests.IntegrationTests;
