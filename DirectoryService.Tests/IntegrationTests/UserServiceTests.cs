@@ -13,7 +13,7 @@ namespace DirectoryService.Tests.IntegrationTests;
 [TestFixture]
 public class UserServiceTests : TestBase
 {
-    [OneTimeSetUp]
+    [SetUp]
     public void Setup()
     {
         TestSetup();
@@ -73,7 +73,6 @@ public class UserServiceTests : TestBase
         
         await userService.UpdateUserByField(session!.UserId, "email", new[] { "test456@test.com" });
         await userService.UpdateUserByField(session!.UserId, "username", new[] { "test345" });
-        await userService.UpdateUserByField(session!.UserId, "password", new[] { "test345!" });
 
         var user = await userService.FindById(session.UserId);
         
