@@ -126,12 +126,18 @@ public sealed class AccountController : V1ApiController
         switch (fieldUpdate.Set.Value.ValueKind)
         {
             case JsonValueKind.String:
-                await _userService.UpdateUserByField(accountId, fieldName, fieldUpdate.Set.Value.ToString());
+                await _userService.UpdateUserByField(accountId, fieldName, new []{fieldUpdate.Set.Value.ToString()});
                 return Success();
             
+            case JsonValueKind.Array:
+                await _userService.UpdateUserByField(accountId, fieldName, 
+                    fieldUpdate.Set.Value.EnumerateArray()
+                        .Select(value => value.ToString()).ToArray());
+                
+                return Success();
+
             default:
                 throw new NotImplementedException();
-                
         }
     }
     

@@ -85,7 +85,7 @@ public sealed class UserService
         var profile = await _userProfileRepository.Retrieve(userId);
         var presence = await _userPresenceService.GetUserPresence(userId);
 
-        UserLocationDto? location = null; 
+        UserLocationDto? location = null;
         if (presence is not null)
         {
             location = new UserLocationDto()
@@ -120,7 +120,7 @@ public sealed class UserService
         var friends = await _userGroupService.GetGroupMembers(user.FriendsGroup, PaginatedRequest.All());
         userInfo.Connections = connections.Data?.ToList();
         userInfo.Friends = friends.Data?.ToList();
-        
+
         return userInfo;
     }
 
@@ -128,7 +128,7 @@ public sealed class UserService
     {
         return await _userRepository.UserIdsToUsernames(userIds);
     }
-    
+
     /// <summary>
     /// Fetch a list of users relative to the requester session
     /// </summary>
@@ -312,10 +312,82 @@ public sealed class UserService
                 NetworkAddress = ""
             };
         }
-        presence.PublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(), CryptographyService.PublicKeyType.Pkcs1PublicKey);
-       
+
+        presence.PublicKey = _cryptographyService.ConvertPublicKey(publicKey.ToByteArray(),
+            CryptographyService.PublicKeyType.Pkcs1PublicKey);
+
         await _userPresenceService.UpdateUserPresence(presence);
     }
+
+    /// <summary>
+    /// Set a new password for user
+    /// </summary>
+    private async Task UpdatePassword(Guid userId, string newPassword)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        //TODO: Validator
+
+        var auth = CryptographyService.GenerateAuth(newPassword);
+
+        user.AuthHash = auth.Hash;
+        user.AuthVersion = auth.Version;
+
+        _logger.LogInformation("Updating password for {user}", user.Username);
+        await _userRepository.Update(user);
+    }
+
+    /// <summary>
+    /// Update username for user
+    /// </summary>
+    private async Task UpdateUsername(Guid userId, string username)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        if (string.Equals(username, user.Username!, StringComparison.CurrentCultureIgnoreCase))
+            return;
+        
+        // Check new username doesn't already exist
+        var existingUser = await _userRepository.FindByUsername(username);
+        if (existingUser is not null)
+            throw new UsernameTakenApiException();
+
+        //TODO: Validator
+
+        _logger.LogInformation("Username update: {oldUsername} to {newUsername}", user.Username, username);
+        user.Username = username;
+        await _userRepository.Update(user);
+    }
+
+    /// <summary>
+    /// Update username for user
+    /// </summary>
+    private async Task UpdateEmail(Guid userId, string email)
+    {
+        var user = await _userRepository.Retrieve(userId);
+        if (user is null)
+            throw new UserNotFoundApiException();
+
+        if (string.Equals(email, user.Email!, StringComparison.CurrentCultureIgnoreCase))
+            return;
+        
+        // Check new email doesn't already exist
+        var existingUser = await _userRepository.FindByEmail(email);
+        if (existingUser is not null)
+            throw new UsernameTakenApiException();
+
+        //TODO: Validator
+
+        _logger.LogInformation("User email update for user {user}: {oldEmail} to {newEmail}", user.Username, user.Email!.MaskEmail(),
+            email.MaskEmail());
+        user.Email = email;
+        await _userRepository.Update(user);
+    }
+
 
     /// <summary>
     /// Update heartbeat for user by session
@@ -324,7 +396,7 @@ public sealed class UserService
     {
         var session = await _sessionProvider.GetRequesterSession();
         if (session is null) throw new UnauthorisedApiException();
-        
+
         await UpdatePublicKey(session.UserId, publicKey);
     }
 
@@ -365,7 +437,7 @@ public sealed class UserService
         presence = await _userPresenceService.UpdateUserPresence(presence);
         return presence!;
     }
-    
+
     /// <summary>
     /// Process heartbeat/location update for session's userId
     /// </summary>
@@ -389,7 +461,7 @@ public sealed class UserService
             Username = user.Username
         };
     }
-    
+
     public async Task<UserProfileDto> GetUserProfile()
     {
         var session = await _sessionProvider.GetRequesterSession();
@@ -398,22 +470,105 @@ public sealed class UserService
         return await GetUserProfile(session.UserId);
     }
 
-    public async Task UpdateUserByField(Guid userId, string field, string value)
+    public async Task UpdateUserByField(Guid userId, string fieldName, IEnumerable<string> values)
     {
-        
+        if (!values.Any())
+            return;
+
         var session = await _sessionProvider.GetRequesterSession();
         if (session is null) throw new UnauthorisedApiException();
-        
+
         var user = await _userRepository.Retrieve(userId);
         if (user is null)
             throw new UserNotFoundApiException();
 
-        //TODO
-        switch (field.ToLower())
+        var updater = new UpdateUserDto
         {
-            case "password":
+            Id = userId
+        };
 
-                break;
+        var fieldsToChange = 0;
+
+        var fields = typeof(UpdateUserDto).GetProperties();
+        foreach (var field in fields)
+        {
+            var attributes = field.GetCustomAttributes(typeof(EditableFieldAttribute), true);
+            if (attributes.Length == 0)
+                continue;
+
+            var editAttribute = (EditableFieldAttribute)attributes[0];
+
+            if (fieldName != editAttribute.FieldName)
+                continue;
+
+            // Check we can edit this field
+            if (!(session.Role == UserRole.Admin && editAttribute.EditPermissions.Contains(Permission.Admin)))
+            {
+                if (!(session.UserId == userId && editAttribute.EditPermissions.Contains(Permission.Owner)))
+                    throw new UnauthorisedApiException();
+            }
+
+            if (field.PropertyType == typeof(string))
+            {
+                field.SetValue(updater, values.FirstOrDefault());
+                fieldsToChange += 1;
+            }
+            else if (field.PropertyType == typeof(string[]))
+            {
+                field.SetValue(updater, values);
+                fieldsToChange += 1;
+            }
+        }
+
+        if (fieldsToChange > 0)
+        {
+            var presence = await _userPresenceService.GetUserPresence(user.Id);
+            var profile = await _userProfileRepository.Retrieve(user.Id);
+
+            if (updater.AccountSettings != null)
+                user.Settings = updater.AccountSettings;
+
+            if (updater.ImagesHero != null && profile != null)
+                profile.HeroImageUrl = updater.ImagesHero;
+
+            if (updater.ImagesTiny != null && profile != null)
+                profile.TinyImageUrl = updater.ImagesTiny;
+
+            if (updater.ImagesThumbnail != null && profile != null)
+                profile.ThumbnailImageUrl = updater.ImagesThumbnail;
+
+            if (updater.Availability != null && presence != null)
+                presence.Availability = updater.Availability;
+
+            if (updater.PublicKey != null && presence != null)
+            {
+                //TODO
+            }
+
+            if (updater.IpAddressOfCreator != null)
+                user.CreatorIp = updater.IpAddressOfCreator;
+
+            if (updater.Roles != null)
+            {
+                if (updater.Roles.Contains(UserRole.User.ToRoleString()))
+                    user.Role = UserRole.User;
+
+                if (updater.Roles.Contains(UserRole.Admin.ToRoleString()))
+                    user.Role = UserRole.Admin;
+            }
+
+            await _userRepository.Update(user);
+            if (presence is not null) await _userPresenceService.UpdateUserPresence(presence);
+            if (profile is not null) await _userProfileRepository.Update(profile);
+
+            if (updater.Username != null)
+                await UpdateUsername(user.Id, updater.Username);
+
+            if (updater.Email != null)
+                await UpdateEmail(user.Id, updater.Email);
+
+            if (updater.Password != null)
+                await UpdatePassword(user.Id, updater.Password);
         }
     }
 }

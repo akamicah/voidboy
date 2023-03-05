@@ -77,18 +77,21 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     {
         using var con = await DbContext.CreateConnectionAsync();
         await con.ExecuteAsync(
-            @"UPDATE users SET email = @email,
+            @"UPDATE users SET username = @username,
+                 email = @email,
                  authVersion = @authVersion,
                  authHash = @authHash,
                  activated = @activated,
                  role = @role,
                  state = @state,
                  connectionGroup = @connectionGroup,
-                 friendGroup = @friendsGroup
+                 friendGroup = @friendsGroup,
+                 settings = @settings
                  WHERE id = @id;",
             new
             {
                 entity.Id,
+                entity.Username,
                 entity.Email,
                 entity.AuthVersion,
                 entity.AuthHash,
@@ -96,7 +99,8 @@ public class UserRepository : BaseRepository<User>, IUserRepository
                 entity.Role,
                 entity.State,
                 entity.ConnectionGroup,
-                entity.FriendsGroup
+                entity.FriendsGroup,
+                entity.Settings
             });
 
         return await Retrieve(entity.Id);
@@ -111,7 +115,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             @"SELECT * FROM users WHERE LOWER(username) = :username",
             new
             {
-                username
+                username = username.ToLower()
             });
 
         return entity;
@@ -124,7 +128,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             @"SELECT * FROM users WHERE email = :emailAddress",
             new
             {
-                emailAddress
+                emailAddress = emailAddress.ToLower()
             });
 
         return entity;

@@ -19,6 +19,7 @@ public class User : BaseEntity
     public bool? Self { get; set; }
     public bool? Connection { get; set; }
     public bool? Friend { get; set; }
+    public string? Settings { get; set; }
 
     public bool Enabled => Activated && State == AccountState.Normal;
 }

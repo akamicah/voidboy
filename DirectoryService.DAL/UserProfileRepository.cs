@@ -48,7 +48,11 @@ public class UserProfileRepository : BaseRepository<UserProfile>, IUserProfileRe
     {
         using var con = await DbContext.CreateConnectionAsync();
         var id = await con.QuerySingleAsync<Guid>(
-            @"UPDATE userProfiles SET heroImageUrl = @heroImageUrl, thumbnailImageUrl = @thumbnailImageUrl, tinyImageUrl = @tinyImageUrl WHERE userId = @userId",
+            @"UPDATE userProfiles SET heroImageUrl = @heroImageUrl,
+                        thumbnailImageUrl = @thumbnailImageUrl,
+                        tinyImageUrl = @tinyImageUrl 
+                    WHERE userId = @userId 
+                    RETURNING id",
             new
             {
                 entity.UserId,
