@@ -269,10 +269,24 @@ public sealed class UserService
             throw new InvalidCredentialsApiException();
         }
 
-        if (user.Activated) return user;
+        switch (user.State)
+        {
+            case AccountState.Suspended:
+                throw new UserSuspendedApiException();
+            case AccountState.Banned:
+                throw new UserBannedApiException();
+            case AccountState.Normal:
+                if (user.Activated)
+                    return user;
+                
+                // User not activated
+                await _userActivationService.SendUserActivationRequest(user);
+                throw new UserNotVerifiedApiException();
 
-        await _userActivationService.SendUserActivationRequest(user);
-        throw new UserNotVerifiedApiException();
+            default:
+                // Account state not handled
+                throw new NotImplementedException();
+        }
     }
 
     /// <summary>
