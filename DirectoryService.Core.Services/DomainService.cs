@@ -326,6 +326,16 @@ public class DomainService
         return null;
     }
 
+    public async Task UpdateDomainByField(Guid domainId, string fieldName, IEnumerable<string> values)
+    {
+        if (!values.Any())
+            return;
+
+        // TODO
+        
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Update the domain's public key. Expects key in PKCS1 DER (binary) form
     /// </summary>

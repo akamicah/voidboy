@@ -1,4 +1,4 @@
-using System.Net;
+using System.Text.Json;
 using AutoMapper;
 using DirectoryService.Api.Attributes;
 using DirectoryService.Api.Controllers.V1.Models;
@@ -113,10 +113,27 @@ public sealed class DomainsController : V1ApiController
     /// </summary>
     [HttpPost("{domainId:guid}/field/{fieldName}")]
     [Authorise]
-    public async Task<IActionResult> SetDomainProperty(Guid domainId, string fieldName, [FromBody] UpdateFieldDto fieldUpdate)
+    public async Task<IActionResult> SetDomainProperty(Guid domainId, string fieldName, [FromBodyOrDefault] UpdateFieldRootModel fieldUpdate)
     {
-        //TODO
-        throw new NotImplementedException();
+        if (fieldUpdate.Set is null || fieldUpdate.Set.HasValue == false)
+            return Failure();
+
+        switch (fieldUpdate.Set.Value.ValueKind)
+        {
+            case JsonValueKind.String:
+                await _domainService.UpdateDomainByField(domainId, fieldName, new []{fieldUpdate.Set.Value.ToString()});
+                return Success();
+            
+            case JsonValueKind.Array:
+                await _domainService.UpdateDomainByField(domainId, fieldName, 
+                    fieldUpdate.Set.Value.EnumerateArray()
+                        .Select(value => value.ToString()).ToArray());
+                
+                return Success();
+
+            default:
+                throw new NotImplementedException();
+        }
     }
     
     /// <summary>
